@@ -1015,28 +1015,25 @@ export const solution = {
   b: {
     input: aInput,
     solution: inputs => {
-      let frequencies = [0]
-      let duplicatedFrequency = null
+      let frequencies = { 0: true }
+      let foundDuplicate = null
       let currentFrequency = 0
 
-      while (duplicatedFrequency === null) {
-        for (let index = 0; index < inputs.length; index++) {
+      outerLoop: while (foundDuplicate === null) {
+        for (let index = 0; index < inputs.length && !foundDuplicate; index++) {
           const input = inputs[index]
+          currentFrequency += eval(input)
 
-          if (!duplicatedFrequency) {
-            currentFrequency += eval(input)
-
-            if (frequencies.indexOf(currentFrequency) > -1) {
-              duplicatedFrequency = currentFrequency
-              break
-            } else {
-              frequencies.push(currentFrequency)
-            }
+          if (frequencies[currentFrequency]) {
+            foundDuplicate = true
+            break outerLoop
+          } else {
+            frequencies[currentFrequency] = true
           }
         }
       }
 
-      return duplicatedFrequency
+      return currentFrequency
     }
   }
 }
