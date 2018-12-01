@@ -1,5 +1,6 @@
 import * as solutions from './solutions'
 import * as tests from './tests'
+import { readFile } from './utils/readFile'
 
 const day = process.argv[2]
 const part = process.argv[3]
@@ -20,7 +21,7 @@ if (command === 'test') {
   })
 } else if (command === 'process') {
   const solution = solutions[day][part]
-  const result = solution.solution(solution.input)
+  const result = solution.solution(readFile(day))
 
   console.log(`Answer: ${result}`)
 }
