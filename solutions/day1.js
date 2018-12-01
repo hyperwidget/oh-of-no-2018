@@ -1016,17 +1016,16 @@ export const solution = {
     input: aInput,
     solution: inputs => {
       let frequencies = { 0: true }
-      let foundDuplicate = null
+      let foundDuplicate = false
       let currentFrequency = 0
 
-      outerLoop: while (foundDuplicate === null) {
+      while (!foundDuplicate) {
         for (let index = 0; index < inputs.length && !foundDuplicate; index++) {
           const input = inputs[index]
           currentFrequency += eval(input)
 
           if (frequencies[currentFrequency]) {
             foundDuplicate = true
-            break outerLoop
           } else {
             frequencies[currentFrequency] = true
           }
