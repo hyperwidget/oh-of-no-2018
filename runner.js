@@ -1,5 +1,3 @@
-// import * as solutions from './solutions'
-// import * as tests from './tests'
 import { readFile } from './utils/readFile'
 import * as days from './days'
 

@@ -312,8 +312,6 @@ var days = _interopRequireWildcard(require("./days"));
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-// import * as solutions from './solutions'
-// import * as tests from './tests'
 const day = process.argv[2];
 const part = process.argv[3];
 const command = process.argv[4];
