@@ -1,4 +1,4 @@
-const aInput = [
+const providedInput = [
   '-19',
   '+8',
   '-10',
@@ -1007,13 +1007,13 @@ const aInput = [
 
 export const solution = {
   a: {
-    input: aInput,
+    input: providedInput,
     solution: input => {
       return input.reduce((tally, inputVal) => (tally += eval(inputVal)), 0)
     }
   },
   b: {
-    input: aInput,
+    input: providedInput,
     solution: inputs => {
       let frequencies = { 0: true }
       let foundDuplicate = false
@@ -1021,8 +1021,7 @@ export const solution = {
 
       while (!foundDuplicate) {
         for (let index = 0; index < inputs.length && !foundDuplicate; index++) {
-          const input = inputs[index]
-          currentFrequency += eval(input)
+          currentFrequency += eval(inputs[index])
 
           if (frequencies[currentFrequency]) {
             foundDuplicate = true
