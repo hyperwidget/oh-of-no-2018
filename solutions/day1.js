@@ -1020,17 +1020,20 @@ export const solution = {
       let currentFrequency = 0
 
       while (duplicatedFrequency === null) {
-        inputs.forEach(input => {
+        for (let index = 0; index < inputs.length; index++) {
+          const input = inputs[index]
+
           if (!duplicatedFrequency) {
             currentFrequency += eval(input)
 
             if (frequencies.indexOf(currentFrequency) > -1) {
               duplicatedFrequency = currentFrequency
+              break
             } else {
               frequencies.push(currentFrequency)
             }
           }
-        })
+        }
       }
 
       return duplicatedFrequency
