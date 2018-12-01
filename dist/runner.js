@@ -104,104 +104,69 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 
   // Override the current require with this new one
   return newRequire;
-})({"solutions/day1.js":[function(require,module,exports) {
+})({"utils/readFile.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = exports.solution = void 0;
-const solution = {
-  a: {
-    input: providedInput,
-    solution: input => {
-      return input.reduce((tally, inputVal) => tally += eval(inputVal), 0);
-    }
+exports.default = exports.readFile = void 0;
+
+var _fs = require("fs");
+
+const readFile = day => {
+  const dir = process.cwd();
+  console.log(dir);
+  return (0, _fs.readFileSync)(`${dir}/days/${day}/inputFile.txt`, {
+    encoding: 'utf8'
+  }).split('\n');
+};
+
+exports.readFile = readFile;
+var _default = readFile;
+exports.default = _default;
+},{}],"days/day1/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: input => {
+    return input.reduce((tally, inputVal) => tally += eval(inputVal), 0);
   },
-  b: {
-    input: providedInput,
-    solution: inputs => {
-      let frequencies = {
-        0: true
-      };
-      let foundDuplicate = false;
-      let currentFrequency = 0;
+  b: inputs => {
+    let frequencies = {
+      0: true
+    };
+    let foundDuplicate = false;
+    let currentFrequency = 0;
 
-      while (!foundDuplicate) {
-        for (let index = 0; index < inputs.length && !foundDuplicate; index++) {
-          currentFrequency += eval(inputs[index]);
+    while (!foundDuplicate) {
+      for (let index = 0; index < inputs.length && !foundDuplicate; index++) {
+        currentFrequency += eval(inputs[index]);
 
-          if (frequencies[currentFrequency]) {
-            foundDuplicate = true;
-          } else {
-            frequencies[currentFrequency] = true;
-          }
+        if (frequencies[currentFrequency]) {
+          foundDuplicate = true;
+        } else {
+          frequencies[currentFrequency] = true;
         }
       }
-
-      return currentFrequency;
     }
+
+    return currentFrequency;
   }
 };
-exports.solution = solution;
-var _default = solution;
 exports.default = _default;
-},{}],"solutions/day2.js":[function(require,module,exports) {
+},{}],"days/day1/test.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = exports.solution = void 0;
-const solution = {
-  a: {
-    input: `Day1AInput`,
-    solution: input => {
-      return input;
-    }
-  },
-  b: {
-    input: `Day1BInput`,
-    solution: input => {
-      return input;
-    }
-  }
-};
-exports.solution = solution;
-var _default = solution;
-exports.default = _default;
-},{}],"solutions/index.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-Object.defineProperty(exports, "day1", {
-  enumerable: true,
-  get: function () {
-    return _day.default;
-  }
-});
-Object.defineProperty(exports, "day2", {
-  enumerable: true,
-  get: function () {
-    return _day2.default;
-  }
-});
-
-var _day = _interopRequireDefault(require("./day1"));
-
-var _day2 = _interopRequireDefault(require("./day2"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./day1":"solutions/day1.js","./day2":"solutions/day2.js"}],"tests/day1.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = exports.tests = void 0;
-const tests = {
+exports.default = void 0;
+var _default = {
   a: [{
     input: [`+1`, `-2`, `+3`, `+1`],
     expected: 3
@@ -226,39 +191,95 @@ const tests = {
     expected: 14
   }]
 };
-exports.tests = tests;
-var _default = tests;
 exports.default = _default;
-},{}],"tests/day2.js":[function(require,module,exports) {
+},{}],"days/day1/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = exports.tests = void 0;
-const tests = {
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day1/solution.js","./test":"days/day1/test.js"}],"days/day2/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: input => {
+    return input;
+  },
+  b: input => {
+    return input;
+  }
+};
+exports.default = _default;
+},{}],"days/day2/test.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
   a: [{
-    input: 1,
-    expected: 2
-  }, {
     input: 1,
     expected: 1
   }, {
-    input: 1,
-    expected: 3
+    input: 2,
+    expected: 2
   }, {
-    input: 1,
-    expected: 7
+    input: 3,
+    expected: 3
   }],
   b: [{
     input: 1,
     expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
   }]
 };
-exports.tests = tests;
-var _default = tests;
 exports.default = _default;
-},{}],"tests/index.js":[function(require,module,exports) {
+},{}],"days/day2/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day2/solution.js","./test":"days/day2/test.js"}],"days/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -282,59 +303,40 @@ var _day = _interopRequireDefault(require("./day1"));
 var _day2 = _interopRequireDefault(require("./day2"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./day1":"tests/day1.js","./day2":"tests/day2.js"}],"utils/readFile.js":[function(require,module,exports) {
+},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js"}],"runner.js":[function(require,module,exports) {
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = exports.readFile = void 0;
-
-var _fs = require("fs");
-
-const readFile = day => {
-  const dir = process.cwd();
-  console.log(dir);
-  return (0, _fs.readFileSync)(`${dir}/inputFiles/${day}.txt`, {
-    encoding: 'utf8'
-  }).split('\n');
-};
-
-exports.readFile = readFile;
-var _default = readFile;
-exports.default = _default;
-},{}],"runner.js":[function(require,module,exports) {
-"use strict";
-
-var solutions = _interopRequireWildcard(require("./solutions"));
-
-var tests = _interopRequireWildcard(require("./tests"));
 
 var _readFile = require("./utils/readFile");
 
+var days = _interopRequireWildcard(require("./days"));
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
+// import * as solutions from './solutions'
+// import * as tests from './tests'
 const day = process.argv[2];
 const part = process.argv[3];
 const command = process.argv[4];
+const dayCode = days[day];
 console.log(`Running ${day} ${part} ${command}`);
 
 if (command === 'test') {
-  tests[day][part].forEach((test, index) => {
+  dayCode.tests[part].forEach((test, index) => {
     let errMessage = '';
-    const result = solutions[day][part].solution(test.input);
-    const pass = result === test.expected;
+    const result = dayCode.solutions[part](test.input);
+    const expected = test.expected;
+    const pass = result === expected;
 
     if (!pass) {
-      errMessage = `Expected: ${test.expected} Got: ${result}`;
+      errMessage = `Expected: ${expected} Got: ${result}`;
     }
 
     console.log(`Test ${index + 1}: ${pass ? 'Pass!' : 'Fail!'} ${errMessage}`);
   });
 } else if (command === 'process') {
-  const solution = solutions[day][part];
-  const result = solution.solution((0, _readFile.readFile)(day));
+  const solution = dayCode.solutions[part];
+  const result = solution((0, _readFile.readFile)(day));
   console.log(`Answer: ${result}`);
 }
-},{"./solutions":"solutions/index.js","./tests":"tests/index.js","./utils/readFile":"utils/readFile.js"}]},{},["runner.js"], null)
+},{"./utils/readFile":"utils/readFile.js","./days":"days/index.js"}]},{},["runner.js"], null)
 //# sourceMappingURL=/runner.map
