@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "parcel -t node runner.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node ./dist/runner.js "
   },
   "repository": {
     "type": "git",
