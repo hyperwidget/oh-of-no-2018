@@ -1,13 +1,34 @@
 export default {
   a: [
-    { input: 1, expected: 1 },
-    { input: 2, expected: 2 },
-    { input: 3, expected: 3 }
+    {
+      input: [
+        'abcdef',
+        'bababc',
+        'abbcde',
+        'abcccd',
+        'aabcdd',
+        'abcdee',
+        'ababab'
+      ],
+      expected: 12
+    }
   ],
   b: [
-    { input: 1, expected: 1 },
-    { input: 1, expected: 1 },
-    { input: 1, expected: 1 },
-    { input: 1, expected: 1 }
+    {
+      input: ['abcde', 'fghij', 'klmno', 'pqrst', 'fguij', 'axcye', 'wvxyz'],
+      expected: 'fgij'
+    },
+    {
+      input: [
+        'abcde',
+        'fghijasdfac',
+        'klmno',
+        'pqrst',
+        'fghijusdfac',
+        'axcye',
+        'wvxyz'
+      ],
+      expected: 'fghijsdfac'
+    }
   ]
 }

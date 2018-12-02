@@ -22,5 +22,8 @@
   "homepage": "https://github.com/hyperwidget/oh-of-no-2018#readme",
   "devDependencies": {
     "parcel-bundler": "^1.10.3"
+  },
+  "dependencies": {
+    "lodash": "^4.17.11"
   }
 }
