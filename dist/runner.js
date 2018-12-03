@@ -312,7 +312,149 @@ var _default = {
   tests: _test.default
 };
 exports.default = _default;
-},{"./solution":"days/day2/solution.js","./test":"days/day2/test.js"}],"days/index.js":[function(require,module,exports) {
+},{"./solution":"days/day2/solution.js","./test":"days/day2/test.js"}],"days/day3/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: inputs => {
+    const grid = Array(1000);
+
+    for (let index = 0; index < grid.length; index++) {
+      grid[index] = Array(1000).fill('.');
+    }
+
+    let count = 0;
+    grid[1][1] = 'x';
+    inputs.forEach(input => {
+      const instruction = input.split(' ');
+      const coords = instruction[2].replace(':', '').split(',');
+      const size = instruction[3].split('x');
+
+      for (let row = 0; row < size[0]; row++) {
+        for (let column = 0; column < size[1]; column++) {
+          const rowVal = parseInt(coords[0]) + row;
+          const colVal = parseInt(coords[1]) + column;
+          const gridValue = grid[rowVal][colVal];
+
+          if (gridValue === '.') {
+            grid[rowVal][colVal] = 1;
+          } else if (gridValue === 1) {
+            grid[rowVal][colVal] = 'x';
+            count++;
+          }
+        }
+      }
+    });
+    return count;
+  },
+  b: inputs => {
+    const grid = Array(1000);
+
+    for (let index = 0; index < grid.length; index++) {
+      grid[index] = Array(1000).fill('.');
+    }
+
+    let retVal = null;
+    grid[1][1] = 'x';
+    inputs.forEach(input => {
+      const instruction = input.split(' ');
+      const coords = instruction[2].replace(':', '').split(',');
+      const size = instruction[3].split('x');
+
+      for (let row = 0; row < size[0]; row++) {
+        for (let column = 0; column < size[1]; column++) {
+          const rowVal = parseInt(coords[0]) + row;
+          const colVal = parseInt(coords[1]) + column;
+          const gridValue = grid[rowVal][colVal];
+
+          if (gridValue === '.') {
+            grid[rowVal][colVal] = 1;
+          } else if (gridValue === 1) {
+            grid[rowVal][colVal] = 'x';
+          }
+        }
+      }
+    });
+
+    for (let index = inputs.length - 1; index > 0; index--) {
+      const input = inputs[index];
+      const instruction = input.split(' ');
+      const coords = instruction[2].replace(':', '').split(',');
+      const size = instruction[3].split('x');
+      let overLapSize = 0;
+
+      for (let row = 0; row < size[0]; row++) {
+        for (let column = 0; column < size[1]; column++) {
+          const rowVal = parseInt(coords[0]) + row;
+          const colVal = parseInt(coords[1]) + column;
+          const gridValue = grid[rowVal][colVal];
+
+          if (gridValue === 'x') {
+            overLapSize++;
+          }
+        }
+      }
+
+      if (overLapSize === 0) {
+        retVal = instruction[0];
+      }
+    }
+
+    return retVal;
+  }
+};
+exports.default = _default;
+},{}],"days/day3/test.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: [{
+    input: [`#1 @ 1,3: 4x4`, `#2 @ 3,1: 4x4`, `#3 @ 5,5: 2x2`],
+    expected: 4
+  }],
+  b: [{
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }]
+};
+exports.default = _default;
+},{}],"days/day3/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day3/solution.js","./test":"days/day3/test.js"}],"days/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -330,13 +472,21 @@ Object.defineProperty(exports, "day2", {
     return _day2.default;
   }
 });
+Object.defineProperty(exports, "day3", {
+  enumerable: true,
+  get: function () {
+    return _day3.default;
+  }
+});
 
 var _day = _interopRequireDefault(require("./day1"));
 
 var _day2 = _interopRequireDefault(require("./day2"));
 
+var _day3 = _interopRequireDefault(require("./day3"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js"}],"runner.js":[function(require,module,exports) {
+},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js"}],"runner.js":[function(require,module,exports) {
 "use strict";
 
 var _readFile = require("./utils/readFile");
