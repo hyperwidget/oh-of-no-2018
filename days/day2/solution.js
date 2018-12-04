@@ -7,6 +7,7 @@ export default {
       let doubleUsed = false
       let tripleUsed = false
       const splitVal = id.split('')
+
       splitVal.forEach(val => {
         if (tracked[val]) {
           tracked[val]++

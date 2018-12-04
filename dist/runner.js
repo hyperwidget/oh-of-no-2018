@@ -454,7 +454,262 @@ var _default = {
   tests: _test.default
 };
 exports.default = _default;
-},{"./solution":"days/day3/solution.js","./test":"days/day3/test.js"}],"days/index.js":[function(require,module,exports) {
+},{"./solution":"days/day3/solution.js","./test":"days/day3/test.js"}],"days/day4/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _moment = _interopRequireWildcard(require("moment"));
+
+var _lodash = require("lodash");
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+const createGuard = id => {
+  return {
+    id,
+    logs: {},
+    totalAsleep: 0,
+    mostAsleepMinute: 0
+  };
+};
+
+const createFreshLog = () => {
+  return new Array(60).fill('.');
+};
+
+const getMostSleptMinute = logs => {
+  let minutes = [];
+
+  for (const key in logs) {
+    if (logs.hasOwnProperty(key)) {
+      const log = logs[key];
+      let sleptMinutes = [];
+
+      for (let i = 0; i < log.length; i++) {
+        const time = log[i];
+
+        if (time !== '.') {
+          sleptMinutes.push(i);
+        } else {}
+      }
+
+      minutes.push(sleptMinutes);
+    }
+  }
+
+  const count = (0, _lodash.countBy)((0, _lodash.flatten)(minutes));
+  const max = (0, _lodash.maxBy)(Object.keys(count), o => count[o]);
+  return {
+    count: count[max],
+    minute: max
+  };
+};
+
+const dateFormat = 'YYYY-MM-DD';
+
+const getDate = input => _moment.default.utc(input).format(dateFormat);
+
+var _default = {
+  a: inputs => {
+    // SORT INPUT
+    inputs.sort((a, b) => {
+      const alog = a.split(']');
+      const aVal = new Date(alog[0].replace('[', ''));
+      const blog = b.split(']');
+      const bVal = new Date(blog[0].replace('[', ''));
+
+      if (aVal < bVal) {
+        return -1;
+      }
+
+      if (aVal > bVal) {
+        return 1;
+      }
+
+      return 0;
+    });
+    const guards = {};
+    let chosenGuard = null;
+    let currentGuard = null;
+    let lastMinute = 0;
+    inputs.forEach(input => {
+      const log = input.split(' ');
+      const dateVal = new Date(log[0].replace('[', ''));
+      const time = log[1].replace(']', '').split(':');
+      const action = log[2];
+      const id = log[3].replace('#', '');
+
+      if (Number.isNaN(parseInt(id))) {
+        const logId = getDate(dateVal);
+
+        if (action === 'falls') {
+          lastMinute = time[1];
+        } else {
+          // Track total Sleep time
+          for (let i = lastMinute; i < time[1]; i++) {
+            currentGuard.logs[logId][i] = 'x';
+            currentGuard.totalAsleep++;
+          }
+
+          lastMinute = time[1];
+        }
+      } else {
+        // Set up log
+        if (!guards[id]) {
+          guards[id] = createGuard(id);
+        }
+
+        currentGuard = guards[id];
+
+        if (time[0] !== '00') {
+          dateVal.setDate(dateVal.getDate() + 1);
+          currentGuard.logs[getDate(dateVal)] = createFreshLog();
+        } else {
+          currentGuard.logs[getDate(dateVal)] = createFreshLog();
+        }
+
+        lastMinute = 0;
+      }
+    }); // Get guard with most slept minutes
+
+    for (const key in guards) {
+      const guard = guards[key];
+
+      if (!chosenGuard || guard.totalAsleep > chosenGuard.totalAsleep) {
+        chosenGuard = guard;
+      }
+    } // Get minute most slept on
+
+
+    const mostSleptMinute = getMostSleptMinute(chosenGuard.logs).minute;
+    return chosenGuard.id * mostSleptMinute;
+  },
+  b: inputs => {
+    // SORT INPUT
+    inputs.sort((a, b) => {
+      const alog = a.split(']');
+      const aVal = new Date(alog[0].replace('[', ''));
+      const blog = b.split(']');
+      const bVal = new Date(blog[0].replace('[', ''));
+
+      if (aVal < bVal) {
+        return -1;
+      }
+
+      if (aVal > bVal) {
+        return 1;
+      }
+
+      return 0;
+    });
+    const guards = {};
+    let chosenGuard = null;
+    let currentGuard = null;
+    let lastMinute = 0;
+    inputs.forEach(input => {
+      const log = input.split(' ');
+      const dateVal = new Date(log[0].replace('[', ''));
+      const time = log[1].replace(']', '').split(':');
+      const action = log[2];
+      const id = log[3].replace('#', '');
+
+      if (Number.isNaN(parseInt(id))) {
+        const logId = getDate(dateVal);
+
+        if (action === 'falls') {
+          lastMinute = time[1];
+        } else {
+          // Track total Sleep time
+          for (let i = lastMinute; i < time[1]; i++) {
+            currentGuard.logs[logId][i] = 'x';
+            currentGuard.totalAsleep++;
+          }
+
+          lastMinute = time[1];
+        }
+      } else {
+        // Set up log
+        if (!guards[id]) {
+          guards[id] = createGuard(id);
+        }
+
+        currentGuard = guards[id];
+
+        if (time[0] !== '00') {
+          dateVal.setDate(dateVal.getDate() + 1);
+          currentGuard.logs[getDate(dateVal)] = createFreshLog();
+        } else {
+          currentGuard.logs[getDate(dateVal)] = createFreshLog();
+        }
+
+        lastMinute = 0;
+      }
+    }); // Loop through guards and figure out most slept day and count for each
+
+    for (const key in guards) {
+      const guard = guards[key];
+      const answer = getMostSleptMinute(guard.logs);
+      guard.mostSleptMinute = answer.minute;
+      guard.mostSleptMinuteCount = answer.count;
+    } // Find guard with most slept days
+
+
+    for (const key in guards) {
+      const guard = guards[key];
+
+      if (!chosenGuard || guard.mostSleptMinuteCount > chosenGuard.mostSleptMinuteCount) {
+        if (guard.mostSleptMinuteCount) {
+          chosenGuard = guard;
+        }
+      }
+    }
+
+    return chosenGuard.id * chosenGuard.mostSleptMinute;
+  }
+};
+exports.default = _default;
+},{}],"days/day4/test.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: [{
+    input: [`[1518-11-01 00:00] Guard #10 begins shift`, `[1518-11-01 00:05] falls asleep`, `[1518-11-01 00:25] wakes up`, `[1518-11-01 00:30] falls asleep`, `[1518-11-01 00:55] wakes up`, `[1518-11-01 23:58] Guard #99 begins shift`, `[1518-11-02 00:40] falls asleep`, `[1518-11-02 00:50] wakes up`, `[1518-11-03 00:05] Guard #10 begins shift`, `[1518-11-03 00:24] falls asleep`, `[1518-11-03 00:29] wakes up`, `[1518-11-04 00:02] Guard #99 begins shift`, `[1518-11-04 00:36] falls asleep`, `[1518-11-04 00:46] wakes up`, `[1518-11-05 00:03] Guard #99 begins shift`, `[1518-11-05 00:45] falls asleep`, `[1518-11-05 00:55] wakes up`],
+    expected: 240
+  }],
+  b: [{
+    input: [`[1518-11-01 00:00] Guard #10 begins shift`, `[1518-11-01 00:05] falls asleep`, `[1518-11-01 00:25] wakes up`, `[1518-11-01 00:30] falls asleep`, `[1518-11-01 00:55] wakes up`, `[1518-11-01 23:58] Guard #99 begins shift`, `[1518-11-02 00:40] falls asleep`, `[1518-11-02 00:50] wakes up`, `[1518-11-03 00:05] Guard #10 begins shift`, `[1518-11-03 00:24] falls asleep`, `[1518-11-03 00:29] wakes up`, `[1518-11-04 00:02] Guard #99 begins shift`, `[1518-11-04 00:36] falls asleep`, `[1518-11-04 00:46] wakes up`, `[1518-11-05 00:03] Guard #99 begins shift`, `[1518-11-05 00:45] falls asleep`, `[1518-11-05 00:55] wakes up`],
+    expected: 4455
+  }]
+};
+exports.default = _default;
+},{}],"days/day4/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day4/solution.js","./test":"days/day4/test.js"}],"days/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -478,6 +733,12 @@ Object.defineProperty(exports, "day3", {
     return _day3.default;
   }
 });
+Object.defineProperty(exports, "day4", {
+  enumerable: true,
+  get: function () {
+    return _day4.default;
+  }
+});
 
 var _day = _interopRequireDefault(require("./day1"));
 
@@ -485,8 +746,10 @@ var _day2 = _interopRequireDefault(require("./day2"));
 
 var _day3 = _interopRequireDefault(require("./day3"));
 
+var _day4 = _interopRequireDefault(require("./day4"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js"}],"runner.js":[function(require,module,exports) {
+},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js"}],"runner.js":[function(require,module,exports) {
 "use strict";
 
 var _readFile = require("./utils/readFile");
