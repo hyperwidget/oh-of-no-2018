@@ -709,7 +709,132 @@ var _default = {
   tests: _test.default
 };
 exports.default = _default;
-},{"./solution":"days/day4/solution.js","./test":"days/day4/test.js"}],"days/index.js":[function(require,module,exports) {
+},{"./solution":"days/day4/solution.js","./test":"days/day4/test.js"}],"days/day5/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _util = require("util");
+
+const removeReactions = input => {
+  let matchStart = false;
+
+  for (let i = 0; i < input.length - 1 && matchStart === false; i++) {
+    const letter = input[i];
+    const nextLetter = input[i + 1];
+
+    if (letter === letter.toLowerCase() && letter.toUpperCase() === nextLetter || letter === letter.toUpperCase() && letter.toLowerCase() === nextLetter) {
+      matchStart = i; // console.log(matchStart, letter, nextLetter, input.length)
+
+      break;
+    }
+  }
+
+  if (matchStart !== false) {
+    return input.slice(0, matchStart).concat(input.slice(matchStart + 2));
+  } else {
+    return input;
+  }
+};
+
+var _default = {
+  a: inputs => {
+    const input = inputs[0];
+    let done = false;
+    let splitVals = input.split('');
+
+    while (!done) {
+      const startCount = splitVals.length;
+      splitVals = removeReactions(splitVals); // No changes - ur done
+
+      if (startCount === splitVals.length) {
+        done = true;
+      }
+    }
+
+    return splitVals.length; // 50000 too high
+    // 11064 too low
+  },
+  b: inputs => {
+    const input = inputs[0];
+    let lowest = false;
+
+    for (let i = 0; i < 26; i++) {
+      let done = false;
+      const letter = (i + 10).toString(36);
+      let splitVals = input.replace(new RegExp(letter, 'g'), '').replace(new RegExp(letter.toUpperCase(), 'g'), '').split('');
+
+      while (!done) {
+        const startCount = splitVals.length;
+        splitVals = removeReactions(splitVals); // No changes - ur done
+
+        if (startCount === splitVals.length) {
+          done = true;
+        }
+      }
+
+      if (lowest === false || splitVals.length < lowest) {
+        lowest = splitVals.length;
+      }
+    }
+
+    return lowest;
+  }
+};
+exports.default = _default;
+},{}],"days/day5/test.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: [{
+    input: [`dabAcCaCBAcCcaDA`],
+    expected: 10
+  }, {
+    input: [`dDbAcCaCBAcCcaDA`],
+    expected: 8
+  }, {
+    input: [`DDbAcCaCBAcCcaDA`],
+    expected: 10
+  }],
+  b: [{
+    input: [`dabAcCaCBAcCcaDA`],
+    expected: 4
+  }, {
+    input: [`dDbAcCaCBAcCcaDA`],
+    expected: 8
+  }, {
+    input: [`DDbAcCaCBAcCcaDA`],
+    expected: 10
+  }]
+};
+exports.default = _default;
+},{}],"days/day5/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day5/solution.js","./test":"days/day5/test.js"}],"days/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -739,6 +864,12 @@ Object.defineProperty(exports, "day4", {
     return _day4.default;
   }
 });
+Object.defineProperty(exports, "day5", {
+  enumerable: true,
+  get: function () {
+    return _day5.default;
+  }
+});
 
 var _day = _interopRequireDefault(require("./day1"));
 
@@ -748,8 +879,10 @@ var _day3 = _interopRequireDefault(require("./day3"));
 
 var _day4 = _interopRequireDefault(require("./day4"));
 
+var _day5 = _interopRequireDefault(require("./day5"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js"}],"runner.js":[function(require,module,exports) {
+},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js"}],"runner.js":[function(require,module,exports) {
 "use strict";
 
 var _readFile = require("./utils/readFile");
