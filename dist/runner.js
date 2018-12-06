@@ -848,7 +848,202 @@ var _default = {
   tests: _test.default
 };
 exports.default = _default;
-},{"./solution":"days/day5/solution.js","./test":"days/day5/test.js"}],"days/index.js":[function(require,module,exports) {
+},{"./solution":"days/day5/solution.js","./test":"days/day5/test.js"}],"days/day6/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _lodash = require("lodash");
+
+const calcMan = (x1, x2, y1, y2) => Math.abs(x1 - x2) + Math.abs(y1 - y2);
+
+var _default = {
+  a: inputs => {
+    const formattedInput = inputs.map(input => {
+      const vals = input.split(',');
+      return [parseInt(vals[0]), parseInt(vals[1])];
+    }); // find max size of grid to fill it
+
+    let maxSize = (0, _lodash.max)((0, _lodash.flattenDeep)(formattedInput)) + 1; // create grid
+
+    const grid = Array(maxSize);
+
+    for (let i = 0; i < grid.length; i++) {
+      grid[i] = Array(maxSize);
+    } // add inputs to grid
+
+
+    for (let i = 0; i < formattedInput.length; i++) {
+      const input = formattedInput[i];
+      grid[input[1]][input[0]] = i + 1 + '*';
+    } // loop through each grid slot
+
+
+    for (let row = 0; row < maxSize; row++) {
+      for (let col = 0; col < maxSize; col++) {
+        // If this isn't an input slot, don't track
+        if (!grid[row][col]) {
+          // track closest in grid slot
+          let closest = maxSize;
+          let closestInput = -1; // loop through each input and determine closest manhattan distance
+
+          for (let i = 0; i < formattedInput.length; i++) {
+            const man = calcMan(row, formattedInput[i][1], col, formattedInput[i][0]);
+
+            if (man < closest) {
+              closest = man;
+              closestInput = i + 1;
+            } // if same closeness to multiple - then `.`s
+            else if (man === closest) {
+                closestInput = '.';
+              }
+          }
+
+          grid[row][col] = closestInput;
+        }
+      }
+    } // count all occurances of a number in grid
+
+
+    const valueCounts = (0, _lodash.countBy)((0, _lodash.flattenDeep)(grid)); // get values on outside of grid (they'll be infinite)
+
+    const outerVals = [];
+
+    for (let col = 0; col < maxSize; col++) {
+      outerVals.push(grid[0][col]);
+    }
+
+    for (let col = 0; col < maxSize; col++) {
+      outerVals.push(grid[maxSize - 1][col]);
+    }
+
+    for (let row = 0; row < maxSize; row++) {
+      outerVals.push(grid[row][0]);
+    }
+
+    for (let row = 0; row < maxSize; row++) {
+      outerVals.push(grid[row][maxSize - 1]);
+    }
+
+    const cleanOuterVals = (0, _lodash.uniq)(outerVals);
+    const cleanOuterValsObject = {};
+
+    for (let i = 0; i < cleanOuterVals.length; i++) {
+      cleanOuterValsObject[cleanOuterVals[i]] = 0;
+    }
+
+    const cleanedVals = {}; // console.log(valueCounts)
+    // remove outerVals from value counts
+
+    for (const key in valueCounts) {
+      if (valueCounts.hasOwnProperty(key)) {
+        const element = valueCounts[key];
+
+        if (cleanOuterValsObject[key] === undefined) {
+          cleanedVals[key] = element;
+        }
+      }
+    }
+
+    const maxVal = (0, _lodash.maxBy)(Object.keys(cleanedVals), o => cleanedVals[o]);
+    return cleanedVals[maxVal] + 1;
+  },
+  b: inputs => {
+    let maxDistance = 0;
+    const formattedInput = inputs.map(input => {
+      const vals = input.split(',');
+      return [parseInt(vals[0]), parseInt(vals[1])];
+    });
+
+    if (formattedInput.length === 6) {
+      maxDistance = 32;
+    } else {
+      maxDistance = 10000;
+    } // find max size of grid to fill it
+
+
+    let maxSize = (0, _lodash.max)((0, _lodash.flattenDeep)(formattedInput)) + 1; // create grid
+
+    const grid = Array(maxSize);
+
+    for (let i = 0; i < grid.length; i++) {
+      grid[i] = Array(maxSize);
+    } // add inputs to grid
+
+
+    for (let i = 0; i < formattedInput.length; i++) {
+      const input = formattedInput[i];
+      grid[input[1]][input[0]] = i + 1 + '*';
+    } // loop through each grid slot
+
+
+    for (let row = 0; row < maxSize; row++) {
+      for (let col = 0; col < maxSize; col++) {
+        // If this isn't an input slot, don't track
+        // track closest in grid slot
+        let totalMan = 0;
+        let closestInput = -1; // loop through each input and track manhattan distance
+
+        for (let i = 0; i < formattedInput.length; i++) {
+          const man = calcMan(row, formattedInput[i][1], col, formattedInput[i][0]);
+          totalMan += man;
+        } // If value is less than target then hashtag it #blessed
+
+
+        if (totalMan < maxDistance) {
+          grid[row][col] = '#';
+        } else {
+          grid[row][col] = '.';
+        }
+      }
+    } // count all occurances of '#'
+
+
+    return (0, _lodash.countBy)((0, _lodash.flattenDeep)(grid))['#'];
+  }
+};
+exports.default = _default;
+},{}],"days/day6/test.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: [{
+    input: [`1, 1`, `1, 6`, `8, 3`, `3, 4`, `5, 5`, `8, 9`],
+    expected: 17
+  }],
+  b: [{
+    input: [`1, 1`, `1, 6`, `8, 3`, `3, 4`, `5, 5`, `8, 9`],
+    expected: 16
+  }]
+};
+exports.default = _default;
+},{}],"days/day6/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day6/solution.js","./test":"days/day6/test.js"}],"days/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -884,6 +1079,12 @@ Object.defineProperty(exports, "day5", {
     return _day5.default;
   }
 });
+Object.defineProperty(exports, "day6", {
+  enumerable: true,
+  get: function () {
+    return _day6.default;
+  }
+});
 
 var _day = _interopRequireDefault(require("./day1"));
 
@@ -895,8 +1096,10 @@ var _day4 = _interopRequireDefault(require("./day4"));
 
 var _day5 = _interopRequireDefault(require("./day5"));
 
+var _day6 = _interopRequireDefault(require("./day6"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js"}],"runner.js":[function(require,module,exports) {
+},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js"}],"runner.js":[function(require,module,exports) {
 "use strict";
 
 var _readFile = require("./utils/readFile");
