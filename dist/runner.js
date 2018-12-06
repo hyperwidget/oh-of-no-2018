@@ -321,6 +321,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 var _default = {
   a: inputs => {
+    // Literally make a grid of 1000*1000 and fill it with dots
     const grid = Array(1000);
 
     for (let index = 0; index < grid.length; index++) {
@@ -328,11 +329,13 @@ var _default = {
     }
 
     let count = 0;
-    grid[1][1] = 'x';
+    grid[1][1] = 'x'; // For every instruction, parse out into bits that are needed
+
     inputs.forEach(input => {
       const instruction = input.split(' ');
       const coords = instruction[2].replace(':', '').split(',');
-      const size = instruction[3].split('x');
+      const size = instruction[3].split('x'); // Loop through each instruction and add a `1` in every square that should be placed
+      // If an overlap happens, put an x and increase the count of overlaps
 
       for (let row = 0; row < size[0]; row++) {
         for (let column = 0; column < size[1]; column++) {
@@ -348,10 +351,12 @@ var _default = {
           }
         }
       }
-    });
+    }); // Return overlaps
+
     return count;
   },
   b: inputs => {
+    // All this is exactly the same as part a
     const grid = Array(1000);
 
     for (let index = 0; index < grid.length; index++) {
@@ -378,7 +383,11 @@ var _default = {
           }
         }
       }
-    });
+    }); // _THIS_ is just genious /s
+    // This loops through all the instructions _backwards_ after having already
+    // gone through the instructions in the original order
+    // that way I don't need to worry about whether or not a future instruction
+    // doesn't overlap with this one, because all the future instructions have been run already
 
     for (let index = inputs.length - 1; index > 0; index--) {
       const input = inputs[index];
@@ -468,6 +477,7 @@ var _lodash = require("lodash");
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
+// Just a default guard object witht the structure I want
 const createGuard = id => {
   return {
     id,
@@ -475,11 +485,14 @@ const createGuard = id => {
     totalAsleep: 0,
     mostAsleepMinute: 0
   };
-};
+}; // A fresh array with no minutes slept in
+
 
 const createFreshLog = () => {
   return new Array(60).fill('.');
-};
+}; // Loops through the logs provided, compares them and finds the minute
+// that occurs in the logs the most, returns a count and the minute itself
+
 
 const getMostSleptMinute = logs => {
   let minutes = [];
@@ -535,21 +548,23 @@ var _default = {
     const guards = {};
     let chosenGuard = null;
     let currentGuard = null;
-    let lastMinute = 0;
+    let lastMinute = 0; // Format input inot the way I chose to use it
+
     inputs.forEach(input => {
       const log = input.split(' ');
       const dateVal = new Date(log[0].replace('[', ''));
       const time = log[1].replace(']', '').split(':');
       const action = log[2];
-      const id = log[3].replace('#', '');
+      const id = log[3].replace('#', ''); // If the guard exists, we're dealing with sleeping or waking
 
       if (Number.isNaN(parseInt(id))) {
-        const logId = getDate(dateVal);
+        const logId = getDate(dateVal); // If the guard falls alseep, we just need to keep track of when he fell asleep
 
         if (action === 'falls') {
           lastMinute = time[1];
         } else {
-          // Track total Sleep time
+          // If the guard wakes up, we use the falls asleep time to update the logs with
+          // his slept minutes as well as updates this guard's total Sleep time
           for (let i = lastMinute; i < time[1]; i++) {
             currentGuard.logs[logId][i] = 'x';
             currentGuard.totalAsleep++;
@@ -558,12 +573,13 @@ var _default = {
           lastMinute = time[1];
         }
       } else {
-        // Set up log
+        // If guard doesn't exist then set up new guard ++ logs
         if (!guards[id]) {
           guards[id] = createGuard(id);
         }
 
-        currentGuard = guards[id];
+        currentGuard = guards[id]; // If the time's hour isn't midnight then set up the log for the following day
+        // because we really don't care when the guard starts, just what day his shift is for
 
         if (time[0] !== '00') {
           dateVal.setDate(dateVal.getDate() + 1);
@@ -589,7 +605,7 @@ var _default = {
     return chosenGuard.id * mostSleptMinute;
   },
   b: inputs => {
-    // SORT INPUT
+    // The same as part
     inputs.sort((a, b) => {
       const alog = a.split(']');
       const aVal = new Date(alog[0].replace('[', ''));
@@ -648,14 +664,14 @@ var _default = {
 
         lastMinute = 0;
       }
-    }); // Loop through guards and figure out most slept day and count for each
+    }); // Loop through guards and figure out most slept minute and count for each
 
     for (const key in guards) {
       const guard = guards[key];
       const answer = getMostSleptMinute(guard.logs);
       guard.mostSleptMinute = answer.minute;
       guard.mostSleptMinuteCount = answer.count;
-    } // Find guard with most slept days
+    } // Find guard with most slept minutes
 
 
     for (const key in guards) {
@@ -717,18 +733,16 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _util = require("util");
-
 const removeReactions = input => {
-  let matchStart = false;
+  let matchStart = false; // Loop through input from the start, if the next letter is the same letter
+  // but opposite case then return the input minus those two indexes
 
   for (let i = 0; i < input.length - 1 && matchStart === false; i++) {
     const letter = input[i];
     const nextLetter = input[i + 1];
 
     if (letter === letter.toLowerCase() && letter.toUpperCase() === nextLetter || letter === letter.toUpperCase() && letter.toLowerCase() === nextLetter) {
-      matchStart = i; // console.log(matchStart, letter, nextLetter, input.length)
-
+      matchStart = i;
       break;
     }
   }
@@ -744,7 +758,7 @@ var _default = {
   a: inputs => {
     const input = inputs[0];
     let done = false;
-    let splitVals = input.split('');
+    let splitVals = input.split(''); // keep removing reactions until there are no more
 
     while (!done) {
       const startCount = splitVals.length;
@@ -755,12 +769,12 @@ var _default = {
       }
     }
 
-    return splitVals.length; // 50000 too high
-    // 11064 too low
+    return splitVals.length;
   },
   b: inputs => {
     const input = inputs[0];
-    let lowest = false;
+    let lowest = false; // For every letter in the alphabet, remove each case from the original string
+    // Process as above for each, tracking the lowest amount of letters left
 
     for (let i = 0; i < 26; i++) {
       let done = false;

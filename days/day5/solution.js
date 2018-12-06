@@ -1,7 +1,8 @@
-import { debug } from 'util'
-
 const removeReactions = input => {
   let matchStart = false
+  // Loop through input from the start, if the next letter is the same letter
+  // but opposite case then return the input minus those two indexes
+
   for (let i = 0; i < input.length - 1 && matchStart === false; i++) {
     const letter = input[i]
     const nextLetter = input[i + 1]
@@ -11,7 +12,6 @@ const removeReactions = input => {
       (letter === letter.toUpperCase() && letter.toLowerCase() === nextLetter)
     ) {
       matchStart = i
-      // console.log(matchStart, letter, nextLetter, input.length)
       break
     }
   }
@@ -30,6 +30,7 @@ export default {
     let done = false
     let splitVals = input.split('')
 
+    // keep removing reactions until there are no more
     while (!done) {
       const startCount = splitVals.length
 
@@ -42,13 +43,13 @@ export default {
     }
 
     return splitVals.length
-    // 50000 too high
-    // 11064 too low
   },
   b: inputs => {
     const input = inputs[0]
 
     let lowest = false
+    // For every letter in the alphabet, remove each case from the original string
+    // Process as above for each, tracking the lowest amount of letters left
     for (let i = 0; i < 26; i++) {
       let done = false
       const letter = (i + 10).toString(36)

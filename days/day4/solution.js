@@ -1,6 +1,7 @@
 import moment, { min } from 'moment'
 import { flatten, countBy, maxBy } from 'lodash'
 
+// Just a default guard object witht the structure I want
 const createGuard = id => {
   return {
     id,
@@ -10,10 +11,13 @@ const createGuard = id => {
   }
 }
 
+// A fresh array with no minutes slept in
 const createFreshLog = () => {
   return new Array(60).fill('.')
 }
 
+// Loops through the logs provided, compares them and finds the minute
+// that occurs in the logs the most, returns a count and the minute itself
 const getMostSleptMinute = logs => {
   let minutes = []
 
@@ -67,6 +71,7 @@ export default {
     let currentGuard = null
     let lastMinute = 0
 
+    // Format input inot the way I chose to use it
     inputs.forEach(input => {
       const log = input.split(' ')
       const dateVal = new Date(log[0].replace('[', ''))
@@ -74,12 +79,16 @@ export default {
       const action = log[2]
       const id = log[3].replace('#', '')
 
+      // If the guard exists, we're dealing with sleeping or waking
       if (Number.isNaN(parseInt(id))) {
         const logId = getDate(dateVal)
+
+        // If the guard falls alseep, we just need to keep track of when he fell asleep
         if (action === 'falls') {
           lastMinute = time[1]
         } else {
-          // Track total Sleep time
+          // If the guard wakes up, we use the falls asleep time to update the logs with
+          // his slept minutes as well as updates this guard's total Sleep time
           for (let i = lastMinute; i < time[1]; i++) {
             currentGuard.logs[logId][i] = 'x'
             currentGuard.totalAsleep++
@@ -87,12 +96,15 @@ export default {
           lastMinute = time[1]
         }
       } else {
-        // Set up log
+        // If guard doesn't exist then set up new guard ++ logs
         if (!guards[id]) {
           guards[id] = createGuard(id)
         }
 
         currentGuard = guards[id]
+
+        // If the time's hour isn't midnight then set up the log for the following day
+        // because we really don't care when the guard starts, just what day his shift is for
 
         if (time[0] !== '00') {
           dateVal.setDate(dateVal.getDate() + 1)
@@ -119,7 +131,7 @@ export default {
     return chosenGuard.id * mostSleptMinute
   },
   b: inputs => {
-    // SORT INPUT
+    // The same as part
     inputs.sort((a, b) => {
       const alog = a.split(']')
       const aVal = new Date(alog[0].replace('[', ''))
@@ -177,7 +189,7 @@ export default {
       }
     })
 
-    // Loop through guards and figure out most slept day and count for each
+    // Loop through guards and figure out most slept minute and count for each
     for (const key in guards) {
       const guard = guards[key]
       const answer = getMostSleptMinute(guard.logs)
@@ -185,7 +197,7 @@ export default {
       guard.mostSleptMinuteCount = answer.count
     }
 
-    // Find guard with most slept days
+    // Find guard with most slept minutes
     for (const key in guards) {
       const guard = guards[key]
 
