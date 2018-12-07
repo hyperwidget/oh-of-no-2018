@@ -1043,7 +1043,209 @@ var _default = {
   tests: _test.default
 };
 exports.default = _default;
-},{"./solution":"days/day6/solution.js","./test":"days/day6/test.js"}],"days/index.js":[function(require,module,exports) {
+},{"./solution":"days/day6/solution.js","./test":"days/day6/test.js"}],"days/day7/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _lodash = require("lodash");
+
+const processRequirementsMet = (stepsTaken, requirements) => {
+  return (0, _lodash.difference)(requirements, stepsTaken).length === 0;
+};
+
+var _default = {
+  a: inputs => {
+    const steps = {};
+    const targets = [];
+    const path = [];
+    let startingPoint = null;
+    inputs.forEach(input => {
+      const splitInput = input.split(' ');
+      const name = splitInput[1];
+      const target = splitInput[7];
+
+      if (!steps[name]) {
+        steps[name] = {
+          name,
+          targets: [],
+          requires: [],
+          processed: false,
+          requirementsMet: false
+        };
+      }
+
+      if (!steps[target]) {
+        steps[target] = {
+          name,
+          targets: [],
+          requires: [],
+          processed: false,
+          requirementsMet: false
+        };
+      }
+
+      steps[name].targets.push(target);
+      steps[target].requires.push(name);
+      targets.push(target);
+    });
+    const keys = Object.keys(steps).sort();
+    startingPoint = (0, _lodash.difference)(Object.keys(steps), targets).sort()[0];
+    steps[startingPoint].processed = true;
+    path.push(startingPoint); // Loop through keys, update their `requirementsMet`
+
+    keys.forEach(key => {
+      steps[key].requirementsMet = processRequirementsMet(path, steps[key].requires);
+    });
+
+    while (path.length < keys.length) {
+      let firstProcessed = false;
+
+      for (let i = 0; i < keys.length && !firstProcessed; i++) {
+        const key = keys[i];
+        const step = steps[key];
+
+        if (!step.processed) {
+          // console.log('checking ' + key)
+          if (step.requirementsMet) {
+            path.push(key);
+            steps[key].processed = true;
+            firstProcessed = true;
+          }
+        }
+      }
+
+      keys.forEach(key => {
+        steps[key].requirementsMet = processRequirementsMet(path, steps[key].requires);
+      });
+    }
+
+    return path.join(''); // Had an issue previously where I had the wrong starting point
+    // SEFDGJLPKNRYOAMQIUHTCVWZXB
+  },
+  b: inputs => {
+    const steps = {};
+    const workerCount = inputs.length === 7 ? 2 : 4;
+    const delay = inputs.length === 7 ? 1 : 60;
+    const targets = [];
+    const path = [];
+    const workers = [];
+    let startingPoint = null;
+    inputs.forEach(input => {
+      const splitInput = input.split(' ');
+      const name = splitInput[1];
+      const target = splitInput[7];
+
+      if (!steps[name]) {
+        steps[name] = {
+          name,
+          targets: [],
+          requires: [],
+          processed: false,
+          requirementsMet: false
+        };
+      }
+
+      if (!steps[target]) {
+        steps[target] = {
+          name,
+          targets: [],
+          requires: [],
+          processed: false,
+          requirementsMet: false
+        };
+      }
+
+      steps[name].targets.push(target);
+      steps[target].requires.push(name);
+      targets.push(target);
+    });
+
+    for (let i = 0; i < workerCount; i++) {
+      workers.push({
+        available: true,
+        currentlyProcessing: null,
+        timeLeft: 0
+      });
+    }
+
+    const keys = Object.keys(steps).sort();
+    startingPoint = (0, _lodash.difference)(Object.keys(steps), targets).sort()[0];
+    steps[startingPoint].processed = true;
+    path.push(startingPoint); // Loop through keys, update their `requirementsMet`
+
+    keys.forEach(key => {
+      steps[key].requirementsMet = processRequirementsMet(path, steps[key].requires);
+    });
+
+    while (path.length < keys.length) {
+      let firstProcessed = false;
+
+      for (let i = 0; i < keys.length && !firstProcessed; i++) {
+        const key = keys[i];
+        const step = steps[key];
+
+        if (!step.processed) {
+          // console.log('checking ' + key)
+          if (step.requirementsMet) {
+            path.push(key);
+            steps[key].processed = true;
+            firstProcessed = true;
+          }
+        }
+      }
+
+      keys.forEach(key => {
+        steps[key].requirementsMet = processRequirementsMet(path, steps[key].requires);
+      });
+    }
+
+    return path.join(''); // Had an issue previously where I had the wrong starting point
+    // SEFDGJLPKNRYOAMQIUHTCVWZXB
+  }
+};
+exports.default = _default;
+},{}],"days/day7/test.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: [{
+    input: [`Step C must be finished before step A can begin.`, `Step C must be finished before step F can begin.`, `Step A must be finished before step B can begin.`, `Step A must be finished before step D can begin.`, `Step B must be finished before step E can begin.`, `Step D must be finished before step E can begin.`, `Step F must be finished before step E can begin.`],
+    expected: `CABDFE`
+  }],
+  b: [{
+    input: [`Step C must be finished before step A can begin.`, `Step C must be finished before step F can begin.`, `Step A must be finished before step B can begin.`, `Step A must be finished before step D can begin.`, `Step B must be finished before step E can begin.`, `Step D must be finished before step E can begin.`, `Step F must be finished before step E can begin.`],
+    expected: 15
+  }]
+};
+exports.default = _default;
+},{}],"days/day7/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day7/solution.js","./test":"days/day7/test.js"}],"days/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1085,6 +1287,12 @@ Object.defineProperty(exports, "day6", {
     return _day6.default;
   }
 });
+Object.defineProperty(exports, "day7", {
+  enumerable: true,
+  get: function () {
+    return _day7.default;
+  }
+});
 
 var _day = _interopRequireDefault(require("./day1"));
 
@@ -1098,8 +1306,10 @@ var _day5 = _interopRequireDefault(require("./day5"));
 
 var _day6 = _interopRequireDefault(require("./day6"));
 
+var _day7 = _interopRequireDefault(require("./day7"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js"}],"runner.js":[function(require,module,exports) {
+},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js"}],"runner.js":[function(require,module,exports) {
 "use strict";
 
 var _readFile = require("./utils/readFile");
