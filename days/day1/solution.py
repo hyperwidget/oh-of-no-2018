@@ -26,19 +26,18 @@ def part_b(input):
     frequencies = set({0})
 
     notFound = True
-    foundFrequency = 0
     currentFrequency = 0
+    c = itertools.cycle(input)
     while notFound:
         for change in input:
             if notFound:
                 currentFrequency += int(change)
                 if currentFrequency in frequencies:
                     notFound = False
-                    foundFrequency = currentFrequency
                 else:
                     frequencies.add(currentFrequency)
 
-    return foundFrequency
+    return currentFrequency
 
 
 solutions = {
@@ -48,7 +47,6 @@ solutions = {
 
 
 def test(part):
-
     for index in range(len(tests[part])):
         test = tests[part][index]
         result = solutions[part](test['input'])
@@ -60,7 +58,6 @@ def test(part):
 
 
 def process(part):
-
     print(solutions[part](fileLines))
 
 
