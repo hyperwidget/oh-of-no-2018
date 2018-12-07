@@ -24,18 +24,14 @@ def part_a(input):
 
 def part_b(input):
     frequencies = set({0})
-
-    notFound = True
     currentFrequency = 0
     c = itertools.cycle(input)
-    while notFound:
-        for change in input:
-            if notFound:
-                currentFrequency += int(change)
-                if currentFrequency in frequencies:
-                    notFound = False
-                else:
-                    frequencies.add(currentFrequency)
+    while True:
+        currentFrequency += int(next(c))
+        if currentFrequency in frequencies:
+            return currentFrequency
+        else:
+            frequencies.add(currentFrequency)
 
     return currentFrequency
 
