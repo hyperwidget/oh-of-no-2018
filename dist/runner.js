@@ -1070,7 +1070,6 @@ var _default = {
 
       if (!steps[name]) {
         steps[name] = {
-          name,
           targets: [],
           requires: [],
           processed: false,
@@ -1080,7 +1079,6 @@ var _default = {
 
       if (!steps[target]) {
         steps[target] = {
-          name,
           targets: [],
           requires: [],
           processed: false,
@@ -1088,7 +1086,6 @@ var _default = {
         };
       }
 
-      steps[name].targets.push(target);
       steps[target].requires.push(name);
       targets.push(target);
     });
@@ -1128,12 +1125,13 @@ var _default = {
   },
   b: inputs => {
     const steps = {};
-    const workerCount = inputs.length === 7 ? 2 : 4;
-    const delay = inputs.length === 7 ? 1 : 60;
+    const workerCount = inputs.length === 7 ? 2 : 5;
+    const delay = inputs.length === 7 ? 0 : 60;
     const targets = [];
     const path = [];
     const workers = [];
-    let startingPoint = null;
+    let totalTime = 0;
+    let startingPoints = null;
     inputs.forEach(input => {
       const splitInput = input.split(' ');
       const name = splitInput[1];
@@ -1141,8 +1139,6 @@ var _default = {
 
       if (!steps[name]) {
         steps[name] = {
-          name,
-          targets: [],
           requires: [],
           processed: false,
           requirementsMet: false
@@ -1151,60 +1147,81 @@ var _default = {
 
       if (!steps[target]) {
         steps[target] = {
-          name,
-          targets: [],
           requires: [],
           processed: false,
           requirementsMet: false
         };
       }
 
-      steps[name].targets.push(target);
       steps[target].requires.push(name);
       targets.push(target);
     });
 
     for (let i = 0; i < workerCount; i++) {
       workers.push({
-        available: true,
         currentlyProcessing: null,
-        timeLeft: 0
+        availableAt: 0
       });
     }
 
     const keys = Object.keys(steps).sort();
-    startingPoint = (0, _lodash.difference)(Object.keys(steps), targets).sort()[0];
-    steps[startingPoint].processed = true;
-    path.push(startingPoint); // Loop through keys, update their `requirementsMet`
+    startingPoints = (0, _lodash.difference)(Object.keys(steps), targets).sort(); // steps[startingPoint].processed = true
+    // path.push(startingPoint)
+
+    startingPoints.forEach((point, index) => {
+      workers[index].availableAt = delay + point.toLowerCase().charCodeAt(0) - 96;
+      workers[index].processing = point;
+    }); // Loop through keys, update their `requirementsMet`
 
     keys.forEach(key => {
       steps[key].requirementsMet = processRequirementsMet(path, steps[key].requires);
     });
 
     while (path.length < keys.length) {
-      let firstProcessed = false;
+      let canBeProcessed = [];
+      workers.forEach(worker => {
+        if (worker.availableAt === totalTime && worker.processing) {
+          path.push(worker.processing);
+          steps[worker.processing].processed = true;
+        }
+      });
+      keys.forEach(key => {
+        steps[key].requirementsMet = processRequirementsMet(path, steps[key].requires);
+      });
 
-      for (let i = 0; i < keys.length && !firstProcessed; i++) {
+      for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
         const step = steps[key];
 
         if (!step.processed) {
-          // console.log('checking ' + key)
           if (step.requirementsMet) {
-            path.push(key);
-            steps[key].processed = true;
-            firstProcessed = true;
+            canBeProcessed.push(key);
           }
         }
       }
 
-      keys.forEach(key => {
-        steps[key].requirementsMet = processRequirementsMet(path, steps[key].requires);
+      let inProcess = [];
+      workers.forEach(worker => {
+        if (worker.availableAt > totalTime && worker.processing) {
+          inProcess.push(worker.processing);
+        }
       });
+      canBeProcessed = (0, _lodash.difference)(canBeProcessed, inProcess).sort(); // if worker is available then process
+
+      if (canBeProcessed.length > 0) {
+        workers.forEach(worker => {
+          if (worker.availableAt <= totalTime && canBeProcessed.length > 0) {
+            const key = canBeProcessed.shift();
+            worker.processing = key;
+            worker.availableAt = totalTime + delay + key.toLowerCase().charCodeAt(0) - 96;
+          }
+        });
+      }
+
+      totalTime++;
     }
 
-    return path.join(''); // Had an issue previously where I had the wrong starting point
-    // SEFDGJLPKNRYOAMQIUHTCVWZXB
+    return totalTime - 1; // 1055 -- too high -- I only had 4 workers set up instead of 5. swear words
   }
 };
 exports.default = _default;
