@@ -55,7 +55,8 @@ def test(part):
         if result == test['expected']:
             print(f"Pass {index + 1}.")
         else:
-            print(f"Fail {index + 1}: Expected {test['expected']}  got {result}")
+            print(
+                f"Fail {index + 1}: Expected {test['expected']}  got {result}")
 
 
 def process(part):
