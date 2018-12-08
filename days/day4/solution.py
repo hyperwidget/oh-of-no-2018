@@ -107,8 +107,8 @@ def part_a(inputs):
     sortedInputs = sorted(inputs, key=sortInput)
 
     guards = {}
-    chosenGuard = None
-    currentGuard = None
+    chosenGuard = {}
+    currentGuard = {}
     lastMinute = 0
 
     # // Format input inot the way I chose to use it
@@ -170,8 +170,8 @@ def part_b(inputs):
     sortedInputs = sorted(inputs, key=sortInput)
 
     guards = {}
-    chosenGuard = None
-    currentGuard = None
+    chosenGuard = {}
+    currentGuard = {}
     lastMinute = 0
 
     # // Format input inot the way I chose to use it

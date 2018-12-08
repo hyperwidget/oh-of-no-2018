@@ -21,47 +21,28 @@ tests = {
         {
             'input': ['abcde', 'fghij', 'klmno', 'pqrst', 'fguij', 'axcye', 'wvxyz'],
             'expected': 'fgij'
+        },
+        {
+            'input': [
+                'abcde',
+                'fghijasdfac',
+                'klmno',
+                'pqrst',
+                'fghijusdfac',
+                'axcye',
+                'wvxyz'
+            ],
+            'expected': 'fghijsdfac'
         }
     ]}
 
 
 def part_a(input):
-    double = 0
-    triple = 0
-
-    for id in input:
-        tracked = {}
-        doubleUsed = False
-        tripleUsed = False
-        splitVal = list(id)
-
-        for val in splitVal:
-            if val in tracked:
-                tracked[val] = tracked[val] + 1
-            else:
-                tracked[val] = 1
-
-        for key in tracked:
-            if not doubleUsed and tracked[key] == 2:
-                double = double + 1
-                doubleUsed = True
-
-            if not tripleUsed and tracked[key] == 3:
-                triple = triple + 1
-                tripleUsed = True
-
-    return double * triple
+    return input
 
 
 def part_b(input):
-    for val in input:
-        for comparedAgainst in input:
-            differences = [i for i in range(
-                len(val)) if val[i] != comparedAgainst[i]]
-
-            if len(differences) == 1:
-                index = differences[0]
-                return val[:index] + val[index+1:]
+    return input
 
 
 solutions = {
@@ -88,5 +69,5 @@ def process(part):
 # test('a')
 # process('a')
 
-test('b')
-process('b')
+# test('b')
+# process('b')
