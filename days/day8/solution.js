@@ -1,21 +1,26 @@
 const processNode = (inputs, cursor, total) => {
+  // Get child and meta count, increase cursor position by 2
   const childrenCount = inputs[cursor]
   const metaCount = inputs[cursor + 1]
   let newCursor = cursor + 2
-  let newTotal = total
+  let nodeTotal = 0
 
+  // process children by calling this same function
+  // getting back a new cursor position from where it's done processing
+  // and that node's total
   for (let i = 0; i < childrenCount; i++) {
     const response = processNode(inputs, newCursor, total)
-    newTotal += response.total
+    nodeTotal += response.total
     newCursor = response.cursor
   }
 
+  // get the meta values for this node
   for (let i = 0; i < metaCount; i++) {
-    newTotal += parseInt(inputs[newCursor])
+    nodeTotal += parseInt(inputs[newCursor])
     newCursor++
   }
 
-  return { total: newTotal, cursor: newCursor }
+  return { total: nodeTotal + total, cursor: newCursor }
 }
 
 const processNode2 = (inputs, cursor, total, index) => {
@@ -31,6 +36,7 @@ const processNode2 = (inputs, cursor, total, index) => {
     children.push(response)
   }
 
+  // If this node has no children, then proces node as in parta
   if (parseInt(childrenCount) === 0) {
     for (let i = 0; i < metaCount; i++) {
       nodeTotal += parseInt(inputs[newCursor])
@@ -39,6 +45,7 @@ const processNode2 = (inputs, cursor, total, index) => {
 
     return { total: nodeTotal, cursor: newCursor, children: [] }
   } else {
+    // Other wise get values of meta data by node's children's indexes
     for (let i = 0; i < metaCount; i++) {
       const metaIdx = parseInt(inputs[newCursor]) - 1
       if (metaIdx + 1 <= children.length) {
@@ -55,6 +62,7 @@ export default {
   a: input => {
     const inputs = input[0].split(' ')
 
+    // RECURSE!
     const metaDataTotal = processNode(inputs, 0, 0, 1)
 
     return metaDataTotal.total
@@ -62,6 +70,7 @@ export default {
   b: input => {
     const inputs = input[0].split(' ')
 
+    // RECURSE!
     const metaDataTotal = processNode2(inputs, 0, 0)
 
     return metaDataTotal.total
