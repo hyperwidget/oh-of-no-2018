@@ -856,7 +856,8 @@ var _default = {
     const formattedInput = inputs.map(input => {
       const vals = input.split(',');
       return [parseInt(vals[0]), parseInt(vals[1])];
-    }); // find max size of grid to fill it
+    });
+    console.log(formattedInput); // find max size of grid to fill it
 
     let maxSize = (0, _lodash.max)((0, _lodash.flattenDeep)(formattedInput)) + 1; // create grid
 
@@ -1280,12 +1281,65 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+
+const processNode = (inputs, cursor, total) => {
+  const childrenCount = inputs[cursor];
+  const metaCount = inputs[cursor + 1];
+  let newCursor = cursor + 2;
+  let newTotal = total;
+
+  for (let i = 0; i < childrenCount; i++) {
+    const response = processNode(inputs, newCursor, total);
+    newTotal += response.total;
+    newCursor = response.cursor;
+  }
+
+  for (let i = 0; i < metaCount; i++) {
+    console.log(inputs[newCursor], 'adding to sum');
+    newTotal += parseInt(inputs[newCursor]);
+    newCursor++;
+  }
+
+  return {
+    total: newTotal,
+    cursor: newCursor
+  };
+};
+
+const processNode2 = (inputs, cursor, total) => {
+  const childrenCount = inputs[cursor];
+  const metaCount = inputs[cursor + 1];
+  let newCursor = cursor + 2;
+  let newTotal = total;
+
+  for (let i = 0; i < childrenCount; i++) {
+    const response = processNode(inputs, newCursor, total);
+    newTotal += response.total;
+    newCursor = response.cursor;
+  }
+
+  for (let i = 0; i < metaCount; i++) {
+    console.log(inputs[newCursor], 'adding to sum');
+    newTotal += parseInt(inputs[newCursor]);
+    newCursor++;
+  }
+
+  return {
+    total: newTotal,
+    cursor: newCursor
+  };
+};
+
 var _default = {
   a: input => {
-    return input;
+    const inputs = input[0].split(' ');
+    const metaDataTotal = processNode(inputs, 0, 0);
+    return metaDataTotal.total;
   },
   b: input => {
-    return input;
+    const inputs = input[0].split(' ');
+    const metaDataTotal = processNode(inputs, 0, 0);
+    return metaDataTotal.total;
   }
 };
 exports.default = _default;
@@ -1298,27 +1352,12 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 var _default = {
   a: [{
-    input: 1,
-    expected: 1
-  }, {
-    input: 2,
-    expected: 2
-  }, {
-    input: 3,
-    expected: 3
+    input: [`2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2`],
+    expected: 138
   }],
   b: [{
-    input: 1,
-    expected: 1
-  }, {
-    input: 1,
-    expected: 1
-  }, {
-    input: 1,
-    expected: 1
-  }, {
-    input: 1,
-    expected: 1
+    input: [`2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2`],
+    expected: 66
   }]
 };
 exports.default = _default;

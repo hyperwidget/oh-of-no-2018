@@ -1,13 +1,4 @@
 export default {
-  a: [
-    { input: 1, expected: 1 },
-    { input: 2, expected: 2 },
-    { input: 3, expected: 3 }
-  ],
-  b: [
-    { input: 1, expected: 1 },
-    { input: 1, expected: 1 },
-    { input: 1, expected: 1 },
-    { input: 1, expected: 1 }
-  ]
+  a: [{ input: [`2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2`], expected: 138 }],
+  b: [{ input: [`2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2`], expected: 66 }]
 }
