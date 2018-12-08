@@ -81,7 +81,10 @@ def getMostSleptMinute(logs):
     for g in itertools.groupby(flattened):
         counts[g[0]] = len(list(g[1]))
 
-    maxVal = max(counts.items(), key=operator.itemgetter(1))[0]
+    if len(counts.keys()) > 0:
+        maxVal = max(counts.items(), key=operator.itemgetter(1))[0]
+    else:
+        return {'count': 0, 'minute': 0}
 
     return {'count': counts[maxVal], 'minute': maxVal}
 
@@ -125,9 +128,6 @@ def part_a(inputs):
                 # If the guard wakes up, we use the falls asleep time to update the logs with
                 # his slept minutes as well as updates this guard's total Sleep time
                 for index in range(int(lastMinute), int(time[1])):
-                    # print(dateVal)
-                    # print('date val')
-                    # print(currentGuard['logs'].keys())
                     currentGuard['logs'][dateVal.strftime(
                         "%Y-%m-%d")][index] = 'x'
                     currentGuard['totalAsleep'] = currentGuard['totalAsleep'] + 1
@@ -143,7 +143,6 @@ def part_a(inputs):
 
             #  If the time's hour isn't midnight then set up the log for the following day
             #  because we really don't care when the guard starts, just what day his shift is for
-
             if time[0] != '00':
                 dateVal = dateVal + timedelta(days=1)
                 currentGuard['logs'][dateVal.strftime(
@@ -192,9 +191,6 @@ def part_b(inputs):
                 # If the guard wakes up, we use the falls asleep time to update the logs with
                 # his slept minutes as well as updates this guard's total Sleep time
                 for index in range(int(lastMinute), int(time[1])):
-                    # print(dateVal)
-                    # print('date val')
-                    # print(currentGuard['logs'].keys())
                     currentGuard['logs'][dateVal.strftime(
                         "%Y-%m-%d")][index] = 'x'
                     currentGuard['totalAsleep'] = currentGuard['totalAsleep'] + 1
@@ -221,16 +217,20 @@ def part_b(inputs):
 
             lastMinute = 0
 
-            #  Get guard with most slept minutes
-            for guardId in guards:
-                guard = guards[guardId]
-                if chosenGuard == None or guard['totalAsleep'] > chosenGuard['totalAsleep']:
-                    chosenGuard = guard
+    for key in guards:
+        guard = guards[key]
+        answer = getMostSleptMinute(guard['logs'])
+        guard['mostSleptMinute'] = answer['minute']
+        guard['mostSleptMinuteCount'] = answer['count']
 
-    #  Get minute most slept on
-    mostSleptMinute = getMostSleptMinute(chosenGuard['logs'])['minute']
+#     Find guard with most slept minutes
+    for key in guards:
+        guard = guards[key]
 
-    return int(chosenGuard['id']) * int(mostSleptMinute)
+        if chosenGuard == None or guard['mostSleptMinuteCount'] > chosenGuard['mostSleptMinuteCount']:
+            chosenGuard = guard
+
+    return int(chosenGuard['id']) * int(chosenGuard['mostSleptMinute'])
 
 
 solutions = {
@@ -254,8 +254,8 @@ def process(part):
     print(solutions[part](fileLines))
 
 
-# test('a')
-# process('a')
+test('a')
+process('a')
 
 test('b')
-# process('b')
+process('b')
