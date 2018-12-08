@@ -8,6 +8,7 @@ export default {
       const vals = input.split(',')
       return [parseInt(vals[0]), parseInt(vals[1])]
     })
+    console.log(formattedInput)
 
     // find max size of grid to fill it
     let maxSize = max(flattenDeep(formattedInput)) + 1
