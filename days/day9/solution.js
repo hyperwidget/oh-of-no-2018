@@ -6,68 +6,40 @@ const process = (input, multiplier = 1) => {
   const lastMarbleValue = parseInt(splitted[6]) * multiplier
   const scores = {}
 
-  let lastPlay = { id: '-', currentPosition: 0, marbles: [0] }
-  let currentMarble = 1
+  let currentPlay = { value: 0 }
+  currentPlay.previous = currentPlay
+  currentPlay.next = currentPlay
 
-  while (currentMarble < lastMarbleValue) {
-    for (
-      let i = 1;
-      i < playerCount + 1 && currentMarble < lastMarbleValue + 1;
-      i++
-    ) {
-      const lastLen = lastPlay.marbles.length
-      let newMarbles = []
-      let currentPosition = lastPlay.currentPosition
-      if (lastLen === 0) currentMarble = lastMarbleValue + 1
-
-      if (currentMarble % 23 !== 0) {
-        currentPosition += 2
-        if (currentPosition > lastLen) {
-          currentPosition = currentPosition % lastLen
-        }
-        if (currentMarble === 1) {
-          currentPosition = 1
-        }
-
-        newMarbles = [
-          ...lastPlay.marbles.slice(0, currentPosition),
-          currentMarble,
-          ...lastPlay.marbles.slice(currentPosition)
-        ]
-      } else {
-        if (!scores[i]) {
-          scores[i] = 0
-        }
-
-        scores[i] += currentMarble
-
-        currentPosition -= 7
-
-        if (currentPosition < 0) {
-          currentPosition = lastLen - Math.abs(currentPosition)
-        }
-
-        scores[i] += lastPlay.marbles[currentPosition]
-
-        newMarbles = [
-          ...lastPlay.marbles.slice(0, currentPosition),
-          ...lastPlay.marbles.slice(currentPosition + 1)
-        ]
+  for (let i = 1; i < lastMarbleValue + 1; i++) {
+    if (i % 23 !== 0) {
+      const newPlay = {
+        value: i,
+        previous: currentPlay.next,
+        next: currentPlay.next.next
       }
-      lastPlay = {
-        id: i,
-        currentMarble,
-        currentPosition,
-        marbles: newMarbles
-      }
-      currentMarble++
+      currentPlay.next.next.previous = newPlay
+      currentPlay.next.next = newPlay
+      currentPlay = newPlay
+    } else {
+      const currentPlayer = i % playerCount
+      if (!scores[currentPlayer]) scores[currentPlayer] = 0
+      const replayce =
+        currentPlay.previous.previous.previous.previous.previous.previous
+          .previous
+
+      scores[currentPlayer] += replayce.value + i
+
+      replayce.previous.next = replayce.next
+      replayce.next.previous = replayce.previous
+
+      currentPlay = replayce.next
     }
   }
-  var maxKey = maxBy(Object.keys(scores), function(o) {
-    return scores[o]
-  })
 
-  return scores[maxKey]
+  console.log()
+  return Object.values(scores)
+    .sort()
+    .reverse()[0]
 }
 
 export default {
