@@ -1409,7 +1409,148 @@ var _default = {
   tests: _test.default
 };
 exports.default = _default;
-},{"./solution":"days/day8/solution.js","./test":"days/day8/test.js"}],"days/index.js":[function(require,module,exports) {
+},{"./solution":"days/day8/solution.js","./test":"days/day8/test.js"}],"days/day9/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _lodash = require("lodash");
+
+var _default = {
+  a: input => {
+    const splitted = input[0].split(' ');
+    const playerCount = parseInt(splitted[0]);
+    const lastMarbleValue = parseInt(splitted[6]);
+    const scores = {};
+    let lastPlay = {
+      id: '-',
+      currentPosition: 0,
+      marbles: [0]
+    };
+    let currentMarble = 1;
+
+    while (currentMarble < lastMarbleValue) {
+      for (let i = 1; i < playerCount + 1 && currentMarble < lastMarbleValue + 1; i++) {
+        const lastLen = lastPlay.marbles.length;
+        let newMarbles = [];
+        let currentPosition = lastPlay.currentPosition;
+        if (lastLen === 0) currentMarble = lastMarbleValue + 1;
+
+        if (currentMarble % 23 !== 0) {
+          currentPosition += 2;
+
+          if (currentPosition > lastLen) {
+            currentPosition = currentPosition % lastLen;
+          }
+
+          if (currentMarble === 1) {
+            currentPosition = 1;
+          }
+
+          newMarbles = [...lastPlay.marbles.slice(0, currentPosition), currentMarble, ...lastPlay.marbles.slice(currentPosition)];
+        } else {
+          if (!scores[i]) {
+            scores[i] = 0;
+          }
+
+          scores[i] += currentMarble;
+          currentPosition -= 7;
+
+          if (currentPosition < 0) {
+            currentPosition = lastLen - Math.abs(currentPosition);
+          }
+
+          scores[i] += lastPlay.marbles[currentPosition];
+          newMarbles = [...lastPlay.marbles.slice(0, currentPosition), ...lastPlay.marbles.slice(currentPosition + 1)];
+        }
+
+        lastPlay = {
+          id: i,
+          currentMarble,
+          currentPosition,
+          marbles: newMarbles
+        };
+        currentMarble++;
+      }
+    }
+
+    var maxKey = (0, _lodash.maxBy)(Object.keys(scores), function (o) {
+      return scores[o];
+    }); // console.log(plays[254])
+    // console.log(scores)
+
+    return scores[maxKey];
+  },
+  b: input => {
+    return input;
+  }
+};
+exports.default = _default;
+},{}],"days/day9/test.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: [{
+    input: [`9 players; last marble is worth 25 points`],
+    expected: 32
+  }, {
+    input: [`10 players; last marble is worth 1618 points`],
+    expected: 8317
+  }, {
+    input: [`13 players; last marble is worth 7999 points`],
+    expected: 146373
+  }, {
+    input: [`17 players; last marble is worth 1104 points`],
+    expected: 2764
+  }, {
+    input: [`21 players; last marble is worth 6111 points`],
+    expected: 54718
+  }, {
+    input: [`30 players; last marble is worth 5807 points`],
+    expected: 37305
+  }],
+  b: [{
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }]
+};
+exports.default = _default;
+},{}],"days/day9/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day9/solution.js","./test":"days/day9/test.js"}],"days/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1463,6 +1604,12 @@ Object.defineProperty(exports, "day8", {
     return _day8.default;
   }
 });
+Object.defineProperty(exports, "day9", {
+  enumerable: true,
+  get: function () {
+    return _day9.default;
+  }
+});
 
 var _day = _interopRequireDefault(require("./day1"));
 
@@ -1480,8 +1627,10 @@ var _day7 = _interopRequireDefault(require("./day7"));
 
 var _day8 = _interopRequireDefault(require("./day8"));
 
+var _day9 = _interopRequireDefault(require("./day9"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js","./day8":"days/day8/index.js"}],"runner.js":[function(require,module,exports) {
+},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js","./day8":"days/day8/index.js","./day9":"days/day9/index.js"}],"runner.js":[function(require,module,exports) {
 "use strict";
 
 var _readFile = require("./utils/readFile");
