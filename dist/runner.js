@@ -1521,7 +1521,160 @@ var _default = {
   tests: _test.default
 };
 exports.default = _default;
-},{"./solution":"days/day9/solution.js","./test":"days/day9/test.js"}],"days/index.js":[function(require,module,exports) {
+},{"./solution":"days/day9/solution.js","./test":"days/day9/test.js"}],"days/day10/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _lodash = require("lodash");
+
+var _default = {
+  a: inputs => {
+    const points = [];
+    inputs.forEach(input => {
+      const splitted = input.replace("position=<", "").replace("velocity=", "").split("> ");
+      const position = splitted[0].split(", ");
+      const velocity = splitted[1].replace("<", "").replace(">", "").split(", ");
+      const point = {
+        startingPosition: [parseInt(position[0]), parseInt(position[1])],
+        position: [parseInt(position[0]), parseInt(position[1])],
+        velocity: [parseInt(velocity[0]), parseInt(velocity[1])]
+      };
+      points.push(point);
+    });
+    let isGrowing = false;
+    let lastLength = 999999;
+    let lastPoints = [];
+    let count = 0;
+
+    while (!isGrowing) {
+      const lowestX = points.reduce((lowest, point) => point.position[0] < lowest ? point.position[0] : lowest, 0);
+      const highestX = points.reduce((highest, point) => point.position[0] > highest ? point.position[0] : highest, 0);
+      const lowestY = points.reduce((lowest, point) => point.position[1] < lowest ? point.position[1] : lowest, 0);
+      const highestY = points.reduce((highest, point) => point.position[1] > highest ? point.position[1] : highest, 0);
+      const gridXSize = highestX;
+      const gridYSize = highestY;
+
+      if (gridYSize === 10) {
+        isGrowing = true;
+        const grid = Array(gridXSize + 1).fill([]);
+
+        for (let i = 0; i < grid.length; i++) {
+          grid[i] = Array(gridYSize).fill(".");
+        }
+
+        lastPoints.forEach(point => {
+          let x = 0;
+          let y = 0;
+          x = point.position[0] + (0 - lowestX);
+          y = point.position[1] + (0 - lowestY); // console.log(point.position[0], point.position[1])
+          // console.log(x, y)
+
+          grid[y][x] = "x";
+        });
+        console.table(grid);
+      }
+
+      if (gridYSize > lastLength) {
+        isGrowing = true;
+        let grid = Array(gridXSize + 1).fill([]); // console.log(gridYSize);
+        // console.log(gridXSize);
+        // grid = Array(gridYSize).fill([]);
+        // for (let i = 0; i < grid.length; i++) {
+        //   grid[i] = Array(gridXSize).fill(" ");
+        // }
+        // lastPoints.forEach(point => {
+        //   let x = 0;
+        //   let y = 0;
+        //   x = point.position[0];
+        //   y = point.position[1];
+        //   if (x === 2 && y === 1) {
+        //     console.log(point);
+        //   }
+        //   // console.log(point.position[0], point.position[1])
+        //   // console.log(x, y)
+        //   grid[y][x] = "x";
+        // });
+        // console.table(grid);
+      } else {
+        lastLength = gridYSize;
+        lastPoints = (0, _lodash.cloneDeep)(points);
+      } // if (!lastLength || grid[0].length < lastLength) {
+      //   console.log(lastLength)
+      //   lastLength = grid[0].length
+      // } else {
+      //   console.log('exit')
+      //   console.log(grid[0].length)
+      //   isGrowing = true
+      // }
+      // console.table(grid)
+
+
+      points.forEach(point => {
+        point.position[0] += point.velocity[0];
+        point.position[1] += point.velocity[1];
+      });
+      count++;
+    }
+
+    console.log(count - 2);
+    return 0;
+  },
+  b: input => {
+    return input;
+  }
+};
+exports.default = _default;
+},{}],"days/day10/test.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: [{
+    input: [`position=< 9,  1> velocity=< 0,  2>`, `position=< 7,  0> velocity=<-1,  0>`, `position=< 3, -2> velocity=<-1,  1>`, `position=< 6, 10> velocity=<-2, -1>`, `position=< 2, -4> velocity=< 2,  2>`, `position=<-6, 10> velocity=< 2, -2>`, `position=< 1,  8> velocity=< 1, -1>`, `position=< 1,  7> velocity=< 1,  0>`, `position=<-3, 11> velocity=< 1, -2>`, `position=< 7,  6> velocity=<-1, -1>`, `position=<-2,  3> velocity=< 1,  0>`, `position=<-4,  3> velocity=< 2,  0>`, `position=<10, -3> velocity=<-1,  1>`, `position=< 5, 11> velocity=< 1, -2>`, `position=< 4,  7> velocity=< 0, -1>`, `position=< 8, -2> velocity=< 0,  1>`, `position=<15,  0> velocity=<-2,  0>`, `position=< 1,  6> velocity=< 1,  0>`, `position=< 8,  9> velocity=< 0, -1>`, `position=< 3,  3> velocity=<-1,  1>`, `position=< 0,  5> velocity=< 0, -1>`, `position=<-2,  2> velocity=< 2,  0>`, `position=< 5, -2> velocity=< 1,  2>`, `position=< 1,  4> velocity=< 2,  1>`, `position=<-2,  7> velocity=< 2, -2>`, `position=< 3,  6> velocity=<-1, -1>`, `position=< 5,  0> velocity=< 1,  0>`, `position=<-6,  0> velocity=< 2,  0>`, `position=< 5,  9> velocity=< 1, -2>`, `position=<14,  7> velocity=<-2,  0>`, `position=<-3,  6> velocity=< 2, -1>`],
+    expected: `HI`
+  }],
+  b: [{
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }]
+};
+exports.default = _default;
+},{}],"days/day10/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day10/solution.js","./test":"days/day10/test.js"}],"days/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1581,6 +1734,12 @@ Object.defineProperty(exports, "day9", {
     return _day9.default;
   }
 });
+Object.defineProperty(exports, "day10", {
+  enumerable: true,
+  get: function () {
+    return _day10.default;
+  }
+});
 
 var _day = _interopRequireDefault(require("./day1"));
 
@@ -1600,8 +1759,10 @@ var _day8 = _interopRequireDefault(require("./day8"));
 
 var _day9 = _interopRequireDefault(require("./day9"));
 
+var _day10 = _interopRequireDefault(require("./day10"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js","./day8":"days/day8/index.js","./day9":"days/day9/index.js"}],"runner.js":[function(require,module,exports) {
+},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js","./day8":"days/day8/index.js","./day9":"days/day9/index.js","./day10":"days/day10/index.js"}],"runner.js":[function(require,module,exports) {
 "use strict";
 
 var _readFile = require("./utils/readFile");
