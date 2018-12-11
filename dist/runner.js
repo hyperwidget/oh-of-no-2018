@@ -1642,7 +1642,75 @@ var _default = {
   tests: _test.default
 };
 exports.default = _default;
-},{"./solution":"days/day10/solution.js","./test":"days/day10/test.js"}],"days/index.js":[function(require,module,exports) {
+},{"./solution":"days/day10/solution.js","./test":"days/day10/test.js"}],"days/day11/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: input => {
+    return input;
+  },
+  b: input => {
+    return input;
+  }
+};
+exports.default = _default;
+},{}],"days/day11/test.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: [{
+    input: 1,
+    expected: 1
+  }, {
+    input: 2,
+    expected: 2
+  }, {
+    input: 3,
+    expected: 3
+  }],
+  b: [{
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }]
+};
+exports.default = _default;
+},{}],"days/day11/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day11/solution.js","./test":"days/day11/test.js"}],"days/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1708,6 +1776,12 @@ Object.defineProperty(exports, "day10", {
     return _day10.default;
   }
 });
+Object.defineProperty(exports, "day11", {
+  enumerable: true,
+  get: function () {
+    return _day11.default;
+  }
+});
 
 var _day = _interopRequireDefault(require("./day1"));
 
@@ -1729,8 +1803,10 @@ var _day9 = _interopRequireDefault(require("./day9"));
 
 var _day10 = _interopRequireDefault(require("./day10"));
 
+var _day11 = _interopRequireDefault(require("./day11"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js","./day8":"days/day8/index.js","./day9":"days/day9/index.js","./day10":"days/day10/index.js"}],"runner.js":[function(require,module,exports) {
+},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js","./day8":"days/day8/index.js","./day9":"days/day9/index.js","./day10":"days/day10/index.js","./day11":"days/day11/index.js"}],"runner.js":[function(require,module,exports) {
 "use strict";
 
 var _readFile = require("./utils/readFile");
