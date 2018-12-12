@@ -1792,7 +1792,144 @@ var _default = {
   tests: _test.default
 };
 exports.default = _default;
-},{"./solution":"days/day11/solution.js","./test":"days/day11/test.js"}],"days/index.js":[function(require,module,exports) {
+},{"./solution":"days/day11/solution.js","./test":"days/day11/test.js"}],"days/day12/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+const getIndicesOf = (searchStr, str) => {
+  var searchStrLen = searchStr.length;
+
+  if (searchStrLen == 0) {
+    return [];
+  }
+
+  var startIndex = 0,
+      index,
+      indices = [];
+
+  while ((index = str.indexOf(searchStr, startIndex)) > -1) {
+    indices.push(index);
+    startIndex = index + 1;
+  }
+
+  return indices;
+};
+
+var _default = {
+  a: inputs => {
+    let generation = 0;
+    const instructions = {};
+    const historicStates = [];
+    let currentZeroIndex = 0;
+    let state = '..' + inputs.shift() + '..';
+    inputs.shift();
+    currentZeroIndex += 2;
+    inputs.forEach((input, index) => {
+      const val = input.replace(' =>', '').split(' ');
+      instructions[index] = {
+        value: val[0],
+        result: val[1]
+      };
+    });
+
+    for (let i = 0; i < 20; i++) {
+      let newState = '';
+
+      if (inputs.length === 14) {
+        newState = '.'.repeat(state.length);
+      } else {
+        newState = state;
+      }
+
+      for (const key in instructions) {
+        const instruction = instructions[key];
+        const indices = getIndicesOf(instruction.value, state);
+        console.log(key, 'key');
+        console.log(state, 'previousState');
+        console.log(newState, 'instructionStart');
+        console.log(indices);
+        console.log(instruction.value);
+        console.log(instruction.result);
+
+        if (indices.length > 0) {
+          indices.forEach(index => {
+            newState = newState.substr(0, index + 2) + instruction.result + newState.substr(index + 3);
+            console.log(newState, 'afterChange');
+          });
+        }
+      }
+
+      state = '..' + newState + '..';
+      currentZeroIndex += 2;
+      console.log(state);
+      console.log(currentZeroIndex);
+      historicStates.push(state);
+    }
+
+    const indexesOfPlants = getIndicesOf('#', state); // console.log(indexesOfPlants)
+
+    console.log(indexesOfPlants.length);
+    console.log(historicStates.length);
+    const potSum = indexesOfPlants.reduce((total, pot) => pot - currentZeroIndex + total, 0);
+    console.log(historicStates);
+    return potSum;
+  },
+  b: inputs => {
+    return input;
+  }
+};
+exports.default = _default;
+},{}],"days/day12/test.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: [{
+    input: ['#..#.#..##......###...###', '', '...## => #', '..#.. => #', '.#... => #', '.#.#. => #', '.#.## => #', '.##.. => #', '.#### => #', '#.#.# => #', '#.### => #', '##.#. => #', '##.## => #', '###.. => #', '###.# => #', '####. => #'],
+    expected: 325
+  }],
+  b: [{
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }]
+};
+exports.default = _default;
+},{}],"days/day12/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day12/solution.js","./test":"days/day12/test.js"}],"days/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1864,6 +2001,12 @@ Object.defineProperty(exports, "day11", {
     return _day11.default;
   }
 });
+Object.defineProperty(exports, "day12", {
+  enumerable: true,
+  get: function () {
+    return _day12.default;
+  }
+});
 
 var _day = _interopRequireDefault(require("./day1"));
 
@@ -1887,8 +2030,10 @@ var _day10 = _interopRequireDefault(require("./day10"));
 
 var _day11 = _interopRequireDefault(require("./day11"));
 
+var _day12 = _interopRequireDefault(require("./day12"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js","./day8":"days/day8/index.js","./day9":"days/day9/index.js","./day10":"days/day10/index.js","./day11":"days/day11/index.js"}],"runner.js":[function(require,module,exports) {
+},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js","./day8":"days/day8/index.js","./day9":"days/day9/index.js","./day10":"days/day10/index.js","./day11":"days/day11/index.js","./day12":"days/day12/index.js"}],"runner.js":[function(require,module,exports) {
 "use strict";
 
 var _readFile = require("./utils/readFile");
