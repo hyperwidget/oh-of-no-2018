@@ -2473,7 +2473,91 @@ var _default = {
   tests: _test.default
 };
 exports.default = _default;
-},{"./solution":"days/day13/solution.js","./test":"days/day13/test.js"}],"days/index.js":[function(require,module,exports) {
+},{"./solution":"days/day13/solution.js","./test":"days/day13/test.js"}],"days/day14/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: input => {
+    const recipes = [3, 7];
+    const elves = [0, 1];
+    const desiredRecipeCount = parseInt(input[0]);
+
+    while (recipes.length < desiredRecipeCount + 10) {
+      for (let e = 0; e < elves.length; e++) {
+        const targetRecipe = 1 + recipes[elves[e]] + elves[e];
+
+        if (targetRecipe > recipes.length - 1) {
+          elves[e] = targetRecipe % recipes.length;
+        } else {
+          elves[e] = targetRecipe;
+        }
+      }
+
+      const recipeSum = elves.reduce((prev, curr) => prev + recipes[curr], 0);
+      recipes.push(...recipeSum.toString().split('').map(n => parseInt(n)));
+    }
+
+    return recipes.join('').substr(desiredRecipeCount, 10);
+  },
+  b: input => {
+    return input;
+  }
+};
+exports.default = _default;
+},{}],"days/day14/test.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: [{
+    input: [`5`],
+    expected: '0124515891'
+  }, {
+    input: [`9`],
+    expected: '5158916779'
+  }, {
+    input: [`18`],
+    expected: '9251071085'
+  }, {
+    input: ['2018'],
+    expected: '5941429882'
+  }],
+  b: [{
+    input: [`01245`],
+    expected: 5 // { input: [`51589`], expected: 9 }
+    // { input: [`92510`], expected: 18 },
+    // { input: ['59414'], expected: 2018 }
+
+  }]
+};
+exports.default = _default;
+},{}],"days/day14/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day14/solution.js","./test":"days/day14/test.js"}],"days/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2557,6 +2641,12 @@ Object.defineProperty(exports, "day13", {
     return _day13.default;
   }
 });
+Object.defineProperty(exports, "day14", {
+  enumerable: true,
+  get: function () {
+    return _day14.default;
+  }
+});
 
 var _day = _interopRequireDefault(require("./day1"));
 
@@ -2584,8 +2674,10 @@ var _day12 = _interopRequireDefault(require("./day12"));
 
 var _day13 = _interopRequireDefault(require("./day13"));
 
+var _day14 = _interopRequireDefault(require("./day14"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js","./day8":"days/day8/index.js","./day9":"days/day9/index.js","./day10":"days/day10/index.js","./day11":"days/day11/index.js","./day12":"days/day12/index.js","./day13":"days/day13/index.js"}],"runner.js":[function(require,module,exports) {
+},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js","./day8":"days/day8/index.js","./day9":"days/day9/index.js","./day10":"days/day10/index.js","./day11":"days/day11/index.js","./day12":"days/day12/index.js","./day13":"days/day13/index.js","./day14":"days/day14/index.js"}],"runner.js":[function(require,module,exports) {
 "use strict";
 
 var _readFile = require("./utils/readFile");
