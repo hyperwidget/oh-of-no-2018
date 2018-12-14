@@ -6,9 +6,9 @@ export default {
     { input: ['2018'], expected: '5941429882' }
   ],
   b: [
-    { input: [`01245`], expected: 5 }
-    // { input: [`51589`], expected: 9 }
-    // { input: [`92510`], expected: 18 },
-    // { input: ['59414'], expected: 2018 }
+    { input: [`01245`], expected: 5 },
+    { input: [`51589`], expected: 9 },
+    { input: [`92510`], expected: 18 },
+    { input: ['59414'], expected: 2018 }
   ]
 }

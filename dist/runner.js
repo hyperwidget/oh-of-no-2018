@@ -2480,6 +2480,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+
+var _lodash = require("lodash");
+
 var _default = {
   a: input => {
     const recipes = [3, 7];
@@ -2504,7 +2507,33 @@ var _default = {
     return recipes.join('').substr(desiredRecipeCount, 10);
   },
   b: input => {
-    return input;
+    const recipes = [3, 7];
+    const elves = [0, 1];
+    let done = false;
+    let joined = '';
+
+    while (!done) {
+      for (let e = 0; e < elves.length; e++) {
+        const targetRecipe = 1 + recipes[elves[e]] + elves[e];
+
+        if (targetRecipe > recipes.length - 1) {
+          elves[e] = targetRecipe % recipes.length;
+        } else {
+          elves[e] = targetRecipe;
+        }
+      }
+
+      const recipeSum = elves.reduce((prev, curr) => prev + recipes[curr], 0);
+      recipes.push(...recipeSum.toString().split('').map(n => parseInt(n)));
+      joined = (0, _lodash.takeRight)(recipes, input[0].length * 2).join('');
+
+      if (joined.indexOf(input) > -1) {
+        const allJoined = recipes.join('');
+        done = allJoined.indexOf(input[0]);
+      }
+    }
+
+    return done;
   }
 };
 exports.default = _default;
@@ -2531,10 +2560,16 @@ var _default = {
   }],
   b: [{
     input: [`01245`],
-    expected: 5 // { input: [`51589`], expected: 9 }
-    // { input: [`92510`], expected: 18 },
-    // { input: ['59414'], expected: 2018 }
-
+    expected: 5
+  }, {
+    input: [`51589`],
+    expected: 9
+  }, {
+    input: [`92510`],
+    expected: 18
+  }, {
+    input: ['59414'],
+    expected: 2018
   }]
 };
 exports.default = _default;
