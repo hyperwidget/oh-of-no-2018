@@ -24,7 +24,9 @@
     "parcel-bundler": "^1.10.3"
   },
   "dependencies": {
+    "easystarjs": "^0.4.3",
     "lodash": "^4.17.11",
-    "moment": "^2.22.2"
+    "moment": "^2.22.2",
+    "pathfinding": "^0.4.18"
   }
 }
