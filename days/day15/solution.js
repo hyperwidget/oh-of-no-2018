@@ -1,4 +1,4 @@
-import { sortBy } from 'lodash'
+import { sortBy, cloneDeep } from 'lodash'
 import PF from 'pathfinding'
 
 const finder = new PF.AStarFinder()
@@ -127,6 +127,7 @@ function findNextMovement(unit, grid, enemies) {
           ? p1[p1.length - 1][1] - p2[p2.length - 1][1]
           : p1[p1.length - 1][0] - p2[p2.length - 1][0]
       )
+      // console.log(targetPaths)
 
       // return the first step to take for the shortest path ([0] is the player current position)
       // console.log(targetPaths, 'TARGETPATHS')
@@ -395,88 +396,117 @@ export default {
     return totalTurns * totalHealth
   },
   b: input => {
-    const grid = []
+    const baseGrid = []
 
-    // Get the grid
+    // Get the baseGrid
     input.forEach(row => {
-      grid.push(row.split(''))
+      baseGrid.push(row.split(''))
     })
 
-    const units = getInitialUnits(grid)
+    let elfPower = 4
+
+    const baseUnits = getInitialUnits(baseGrid)
 
     let turnCount = 0
     let endedBeforeEndOfTurn = false
     let done = false
+    let units = {}
+    let grid = []
     while (!done) {
       let elfDeath = 0
-      const sortedUnits = getSortedUnits(units)
-      // console.log(sortedUnits, 'SORTED')
+      units = cloneDeep(baseUnits)
+      grid = cloneDeep(baseGrid)
 
-      sortedUnits.forEach((unitId, index) => {
-        const currentUnit = units[unitId]
-        if (!currentUnit.dead) {
-          const action = getUnitsNextAction(currentUnit, grid, units)
-          switch (action.type) {
-            case ATTACK:
-              const targetUnit = units[action.target]
-              targetUnit.health -= currentUnit.attack
-              // console.log(`${currentUnit.id} ATTACKS ${action.target}`)
-              if (targetUnit.health <= 0) {
-                // console.log(`${action.target} DIES!`)
-                targetUnit.dead = true
-                grid[targetUnit.currentPosition[0]][
-                  targetUnit.currentPosition[1]
-                ] = '.'
-              }
-              break
-            case MOVE:
-              grid[currentUnit.currentPosition[0]][
-                currentUnit.currentPosition[1]
-              ] = '.'
-              currentUnit.currentPosition = action.target
+      for (const key in units) {
+        const unit = units[key]
+        if (unit.type === 'E') {
+          unit.attack = elfPower
+        }
+      }
 
-              grid[currentUnit.currentPosition[0]][
-                currentUnit.currentPosition[1]
-              ] = currentUnit.type
+      turnCount = 0
+      while (elfDeath === 0 && !done) {
+        const sortedUnits = getSortedUnits(units)
+        // console.log(sortedUnits, 'SORTED')
 
-              const followUpAction = getUnitsNextAction(
-                currentUnit,
-                grid,
-                units,
-                true
-              )
-
-              if (followUpAction.type === ATTACK) {
-                const targetUnit = units[followUpAction.target]
+        sortedUnits.forEach((unitId, index) => {
+          const currentUnit = units[unitId]
+          if (!currentUnit.dead) {
+            const action = getUnitsNextAction(currentUnit, grid, units)
+            switch (action.type) {
+              case ATTACK:
+                const targetUnit = units[action.target]
                 targetUnit.health -= currentUnit.attack
-                // console.log(
-                // `${currentUnit.id} ATTACKS ${followUpAction.target}`
-                // )
+                // console.log(`${currentUnit.id} ATTACKS ${action.target}`)
                 if (targetUnit.health <= 0) {
+                  // console.log(`${action.target} DIES!`)
+                  if (targetUnit.type === 'E') {
+                    elfDeath++
+                  }
                   targetUnit.dead = true
                   grid[targetUnit.currentPosition[0]][
                     targetUnit.currentPosition[1]
                   ] = '.'
                 }
-              }
+                break
+              case MOVE:
+                grid[currentUnit.currentPosition[0]][
+                  currentUnit.currentPosition[1]
+                ] = '.'
+                currentUnit.currentPosition = action.target
 
-              break
-            case BATTLE_OVER:
-              done = true
-              if (index !== sortedUnits.length - 1) {
-                endedBeforeEndOfTurn = true
-              }
-              break
-            default:
-              break
+                grid[currentUnit.currentPosition[0]][
+                  currentUnit.currentPosition[1]
+                ] = currentUnit.type
+
+                const followUpAction = getUnitsNextAction(
+                  currentUnit,
+                  grid,
+                  units,
+                  true
+                )
+
+                if (followUpAction.type === ATTACK) {
+                  const targetUnit = units[followUpAction.target]
+                  targetUnit.health -= currentUnit.attack
+                  // console.log(
+                  // `${currentUnit.id} ATTACKS ${followUpAction.target}`
+                  // )
+                  if (targetUnit.health <= 0) {
+                    targetUnit.dead = true
+                    if (targetUnit.type === 'E') {
+                      elfDeath++
+                    }
+                    grid[targetUnit.currentPosition[0]][
+                      targetUnit.currentPosition[1]
+                    ] = '.'
+                  }
+                }
+
+                break
+              case BATTLE_OVER:
+                done = true
+                if (index !== sortedUnits.length - 1) {
+                  endedBeforeEndOfTurn = true
+                }
+                break
+              default:
+                break
+            }
           }
-        }
-        // console.table(grid)
-      })
+          // console.table(grid)
+        })
 
-      turnCount++
-      // console.table(grid)
-      // console.log('NEW TURN, turn ' + turnCount)
+        turnCount++
+        // console.log(turnCount)
+        // console.table(grid)
+        // console.log('NEW TURN, turn ' + turnCount)
+      }
+
+      elfPower++
+      // console.log(
+      //   `Heck, a elf died; giving them more POWER, power is now ${elfPower}`
+      // )
     }
 
     // console.log(units)
@@ -494,6 +524,7 @@ export default {
     }
 
     console.log(totalHealth)
+    console.log(elfPower)
 
     return totalTurns * totalHealth
   }
