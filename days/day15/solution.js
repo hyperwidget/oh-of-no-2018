@@ -42,31 +42,105 @@ const getInitialUnits = grid => {
 
 const griderator = grid => {}
 
-const getEmptyAdjacentCells = (unit, grid) => {
-  const pos = unit.currentPosition
+const getEmptyAdjacentCells = (pos, grid) => {
   const cells = []
 
+  // console.log(pos, 'POS')
   // above
   if (grid[pos[0] - 1][pos[1]] === '.') {
     cells.push([pos[0] - 1, pos[1]])
   }
   // left
   if (grid[pos[0]][pos[1] - 1] === '.') {
+    // console.log('LEFT')
     cells.push([pos[0], pos[1] - 1])
   }
   // right
-  if (grid[pos[0]][pos[1 + 1]] === '.') {
+  if (grid[pos[0]][pos[1] + 1] === '.') {
+    // console.log('RIGHT')
     cells.push([pos[0], pos[1] + 1])
   }
 
   //below
   if (grid[pos[0] + 1][pos[1]] === '.') {
+    // console.log('BLOW')
     cells.push([pos[0] + 1, pos[1]])
   }
 
   return cells
 }
 
+function findNextMovement(unit, grid, enemies) {
+  let targetKeys = {} // "x,y" ==> { x, y } of alive enemy
+  enemies
+    .filter(e => !e.dead && e.type !== unit.type)
+    .map(e => getEmptyAdjacentCells(e.currentPosition, grid))
+    .reduce((acc, list) => {
+      return acc.concat(...[list])
+    }, [])
+    .map(vals => {
+      return vals
+    })
+    .forEach(pos => {
+      targetKeys[`${pos[0]},${pos[1]}`] = pos
+    })
+
+  // console.log(targetKeys, 'KEYS')
+
+  let visited = {}
+  visited[`${unit.currentPosition[0]},${unit.currentPosition[1]}`] = true
+
+  let paths = [[unit.currentPosition]]
+  while (true) {
+    let newPaths = []
+    let targetPaths = []
+    paths.forEach(path => {
+      // console.log(paths, path[path.length - 1], 'path-1')
+      let adjacents = getEmptyAdjacentCells(path[path.length - 1], grid)
+      // console.log(path[path.length - 1], adjacents, 'jacents')
+      adjacents.forEach(adj => {
+        let xy = `${adj[0]},${adj[1]}`
+        // if (unit.id === 'G1') {
+        // console.log(xy, 'xy')
+        // console.log(grid[adj[0]][adj[1]], 'CELL CONTENT')
+        // console.log(!visited[xy], visited, 'VISITED')
+        // }
+        if (targetKeys[xy]) {
+          // found a path to a target!
+          // add it so at the end of the iteration we chose the right one based on enemy order
+          targetPaths.push([...path, adj, targetKeys[xy]])
+        } else if (!visited[xy] && grid[adj[0]][adj[1]] === '.') {
+          // new extended path to explore at next iteration
+          newPaths.push([...path, adj])
+          // console.log(newPaths, 'NEWPATHS')
+        }
+        visited[xy] = true // mark as visited so other paths ignore it
+      })
+    })
+
+    // console.log(targetPaths, 'tp')
+    if (targetPaths.length > 0) {
+      // we got one or more paths reaching a target for the first time, here is where our search ends
+      // if we found multiple shortest paths, use the one that reaches the first target according top-to-bottom/left-to-right order
+      targetPaths = targetPaths.sort((p1, p2) =>
+        p1[p1.length - 1][0] === p2[p2.length - 1][0]
+          ? p1[p1.length - 1][1] - p2[p2.length - 1][1]
+          : p1[p1.length - 1][0] - p2[p2.length - 1][0]
+      )
+
+      // return the first step to take for the shortest path ([0] is the player current position)
+      // console.log(targetPaths, 'TARGETPATHS')
+      return targetPaths[0][1]
+    }
+
+    // no paths to a target found yet, keep iterating with the paths after one more step
+    paths = newPaths
+    // console.log(paths, 'pathsEnd')
+    if (paths.length < 1) return null // no reachables targets, search ends without a result
+  }
+}
+
+// First version; tool would only return a single path :'(
 const getShortestPath = (unit, grid, enemies) => {
   const paths = []
   let shortestPath = false
@@ -102,7 +176,7 @@ const getShortestPath = (unit, grid, enemies) => {
     })
   }
 
-  console.log(paths, unit.id)
+  // console.log(paths, unit.id)
 
   paths.forEach(path => {
     if (path.length !== 0) {
@@ -201,7 +275,8 @@ const getUnitsNextAction = (unit, grid, units, alreadyMoved = false) => {
         return lowest
       })
     } else {
-      const nextStep = getNextStep(unit, grid, remainingEnemies)
+      const nextStep = findNextMovement(unit, grid, remainingEnemies)
+      // console.log(nextStep, 'MOVE')
       if (nextStep && !alreadyMoved) {
         action.type = MOVE
         action.target = nextStep
@@ -211,7 +286,7 @@ const getUnitsNextAction = (unit, grid, units, alreadyMoved = false) => {
     }
   }
 
-  console.log(unit.id, action)
+  // console.log(unit.id, action)
 
   return action
 }
@@ -228,12 +303,13 @@ export default {
     const units = getInitialUnits(grid)
 
     let turnCount = 0
+    let endedBeforeEndOfTurn = false
     let done = false
-    while (!done && turnCount < 25) {
+    while (!done) {
       const sortedUnits = getSortedUnits(units)
       // console.log(sortedUnits, 'SORTED')
 
-      sortedUnits.forEach(unitId => {
+      sortedUnits.forEach((unitId, index) => {
         const currentUnit = units[unitId]
         if (!currentUnit.dead) {
           const action = getUnitsNextAction(currentUnit, grid, units)
@@ -241,8 +317,9 @@ export default {
             case ATTACK:
               const targetUnit = units[action.target]
               targetUnit.health -= currentUnit.attack
-              console.log(`${currentUnit.id} ATTACKS ${action.target}`)
+              // console.log(`${currentUnit.id} ATTACKS ${action.target}`)
               if (targetUnit.health <= 0) {
+                // console.log(`${action.target} DIES!`)
                 targetUnit.dead = true
                 grid[targetUnit.currentPosition[0]][
                   targetUnit.currentPosition[1]
@@ -269,9 +346,9 @@ export default {
               if (followUpAction.type === ATTACK) {
                 const targetUnit = units[followUpAction.target]
                 targetUnit.health -= currentUnit.attack
-                console.log(
-                  `${currentUnit.id} ATTACKS ${followUpAction.target}`
-                )
+                // console.log(
+                // `${currentUnit.id} ATTACKS ${followUpAction.target}`
+                // )
                 if (targetUnit.health <= 0) {
                   targetUnit.dead = true
                   grid[targetUnit.currentPosition[0]][
@@ -283,6 +360,9 @@ export default {
               break
             case BATTLE_OVER:
               done = true
+              if (index !== sortedUnits.length - 1) {
+                endedBeforeEndOfTurn = true
+              }
               break
             default:
               break
@@ -292,16 +372,129 @@ export default {
       })
 
       turnCount++
-      console.table(grid)
-      console.log('NEW TURN, turn ' + turnCount)
+      // console.table(grid)
+      // console.log('NEW TURN, turn ' + turnCount)
     }
 
     // console.log(units)
     // console.table(grid)
 
-    return input
+    let totalTurns = turnCount - 1
+
+    console.log(totalTurns)
+    let totalHealth = 0
+    for (const key in units) {
+      const unit = units[key]
+      if (!unit.dead) {
+        totalHealth += unit.health
+      }
+    }
+
+    console.log(totalHealth)
+
+    return totalTurns * totalHealth
   },
   b: input => {
-    return input
+    const grid = []
+
+    // Get the grid
+    input.forEach(row => {
+      grid.push(row.split(''))
+    })
+
+    const units = getInitialUnits(grid)
+
+    let turnCount = 0
+    let endedBeforeEndOfTurn = false
+    let done = false
+    while (!done) {
+      let elfDeath = 0
+      const sortedUnits = getSortedUnits(units)
+      // console.log(sortedUnits, 'SORTED')
+
+      sortedUnits.forEach((unitId, index) => {
+        const currentUnit = units[unitId]
+        if (!currentUnit.dead) {
+          const action = getUnitsNextAction(currentUnit, grid, units)
+          switch (action.type) {
+            case ATTACK:
+              const targetUnit = units[action.target]
+              targetUnit.health -= currentUnit.attack
+              // console.log(`${currentUnit.id} ATTACKS ${action.target}`)
+              if (targetUnit.health <= 0) {
+                // console.log(`${action.target} DIES!`)
+                targetUnit.dead = true
+                grid[targetUnit.currentPosition[0]][
+                  targetUnit.currentPosition[1]
+                ] = '.'
+              }
+              break
+            case MOVE:
+              grid[currentUnit.currentPosition[0]][
+                currentUnit.currentPosition[1]
+              ] = '.'
+              currentUnit.currentPosition = action.target
+
+              grid[currentUnit.currentPosition[0]][
+                currentUnit.currentPosition[1]
+              ] = currentUnit.type
+
+              const followUpAction = getUnitsNextAction(
+                currentUnit,
+                grid,
+                units,
+                true
+              )
+
+              if (followUpAction.type === ATTACK) {
+                const targetUnit = units[followUpAction.target]
+                targetUnit.health -= currentUnit.attack
+                // console.log(
+                // `${currentUnit.id} ATTACKS ${followUpAction.target}`
+                // )
+                if (targetUnit.health <= 0) {
+                  targetUnit.dead = true
+                  grid[targetUnit.currentPosition[0]][
+                    targetUnit.currentPosition[1]
+                  ] = '.'
+                }
+              }
+
+              break
+            case BATTLE_OVER:
+              done = true
+              if (index !== sortedUnits.length - 1) {
+                endedBeforeEndOfTurn = true
+              }
+              break
+            default:
+              break
+          }
+        }
+        // console.table(grid)
+      })
+
+      turnCount++
+      // console.table(grid)
+      // console.log('NEW TURN, turn ' + turnCount)
+    }
+
+    // console.log(units)
+    // console.table(grid)
+
+    let totalTurns = turnCount - 1
+
+    console.log(totalTurns)
+    let totalHealth = 0
+    for (const key in units) {
+      const unit = units[key]
+      if (!unit.dead) {
+        totalHealth += unit.health
+      }
+    }
+
+    console.log(totalHealth)
+
+    return totalTurns * totalHealth
   }
 }
