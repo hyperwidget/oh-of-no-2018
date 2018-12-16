@@ -2613,7 +2613,11 @@ const MOVE = 'move';
 const NOTHING = 'nothing';
 
 const getSortedUnits = units => {
-  const sorted = (0, _lodash.sortBy)(units, ['currentPosition']);
+  const sorted = (0, _lodash.sortBy)(units, [function (u) {
+    return u.currentPosition[0];
+  }, function (u) {
+    return u.currentPosition[1];
+  }]);
   const alive = sorted.filter(unit => !unit.dead);
   return alive.map(unit => unit.id);
 };
@@ -2649,9 +2653,9 @@ const getInitialUnits = grid => {
 
 const griderator = grid => {};
 
-const getEmptyAdjacentCells = (unit, grid) => {
-  const pos = unit.currentPosition;
-  const cells = []; // above
+const getEmptyAdjacentCells = (pos, grid) => {
+  const cells = []; // console.log(pos, 'POS')
+  // above
 
   if (grid[pos[0] - 1][pos[1]] === '.') {
     cells.push([pos[0] - 1, pos[1]]);
@@ -2659,21 +2663,134 @@ const getEmptyAdjacentCells = (unit, grid) => {
 
 
   if (grid[pos[0]][pos[1] - 1] === '.') {
+    // console.log('LEFT')
     cells.push([pos[0], pos[1] - 1]);
   } // right
 
 
-  if (grid[pos[0]][pos[1 + 1]] === '.') {
+  if (grid[pos[0]][pos[1] + 1] === '.') {
+    // console.log('RIGHT')
     cells.push([pos[0], pos[1] + 1]);
   } //below
 
 
   if (grid[pos[0] + 1][pos[1]] === '.') {
+    // console.log('BLOW')
     cells.push([pos[0] + 1, pos[1]]);
   }
 
   return cells;
 };
+
+function findNextMovement(unit, grid, enemies) {
+  let targetKeys = {}; // "x,y" ==> { x, y } of alive enemy
+
+  enemies.filter(e => !e.dead && e.type !== unit.type).map(e => getEmptyAdjacentCells(e.currentPosition, grid)).reduce((acc, list) => {
+    return acc.concat(...[list]);
+  }, []).map(vals => {
+    return vals;
+  }).forEach(pos => {
+    targetKeys[`${pos[0]},${pos[1]}`] = pos;
+  }); // console.log(targetKeys, 'KEYS')
+
+  let visited = {};
+  visited[`${unit.currentPosition[0]},${unit.currentPosition[1]}`] = true;
+  let paths = [[unit.currentPosition]];
+
+  while (true) {
+    let newPaths = [];
+    let targetPaths = [];
+    paths.forEach(path => {
+      // console.log(paths, path[path.length - 1], 'path-1')
+      let adjacents = getEmptyAdjacentCells(path[path.length - 1], grid); // console.log(path[path.length - 1], adjacents, 'jacents')
+
+      adjacents.forEach(adj => {
+        let xy = `${adj[0]},${adj[1]}`; // if (unit.id === 'G1') {
+        // console.log(xy, 'xy')
+        // console.log(grid[adj[0]][adj[1]], 'CELL CONTENT')
+        // console.log(!visited[xy], visited, 'VISITED')
+        // }
+
+        if (targetKeys[xy]) {
+          // found a path to a target!
+          // add it so at the end of the iteration we chose the right one based on enemy order
+          targetPaths.push([...path, adj, targetKeys[xy]]);
+        } else if (!visited[xy] && grid[adj[0]][adj[1]] === '.') {
+          // new extended path to explore at next iteration
+          newPaths.push([...path, adj]); // console.log(newPaths, 'NEWPATHS')
+        }
+
+        visited[xy] = true; // mark as visited so other paths ignore it
+      });
+    }); // console.log(targetPaths, 'tp')
+
+    if (targetPaths.length > 0) {
+      // we got one or more paths reaching a target for the first time, here is where our search ends
+      // if we found multiple shortest paths, use the one that reaches the first target according top-to-bottom/left-to-right order
+      targetPaths = targetPaths.sort((p1, p2) => p1[p1.length - 1][0] === p2[p2.length - 1][0] ? p1[p1.length - 1][1] - p2[p2.length - 1][1] : p1[p1.length - 1][0] - p2[p2.length - 1][0]);
+
+      if (targetPaths.length > 1) {
+        // console.log(targetPaths.map(target => target[target.length - 1]))
+        // console.log(targetPaths.map(target => target[target.length - 1].length))
+        const t1 = targetPaths[0][targetPaths[0].length - 1];
+        const t2 = targetPaths[1][targetPaths[0].length - 1]; // console.log(targetPaths)
+        // console.log(
+        //   `chooses ${targetPaths[0][1]} (${
+        //     targetPaths[0][targetPaths[0].length - 1]
+        //   })`
+        // )
+
+        if (targetPaths[0].length === targetPaths[1].length) {
+          if (t1[0] !== t2[0] && t1[1] !== t2[1]) {
+            // console.log(targetPaths[0].length, targetPaths[1].length)
+            // console.log(targetPaths[0][targetPaths[0].length - 1])
+            // console.log(targetPaths[1][targetPaths[1].length - 1])
+            // console.table(grid)
+            // console.log(unit.currentPosition)
+            const n1 = targetPaths[0][1];
+            const n2 = targetPaths[1][1]; // console.log('DIFFERENT target')
+            // console.log(
+            //   `chooses ${targetPaths[0][1]} (${
+            //     targetPaths[0][targetPaths[0].length - 1]
+            //   })`
+            // )
+            // console.log(t1, t2)
+
+            if (n2[0] < n1[0] || n2[0] === n1[0] && n2[1] < n1[1]) {
+              return targetPaths[1][1];
+            }
+          } else {// console.table(grid)
+            // console.log('same target')
+            // console.log(unit.currentPosition)
+            // console.log(t1, t2)
+          }
+        }
+      } // if (
+      //   unit.id === 'G7' &&
+      //   unit.currentPosition[0] === 8 &&
+      //   unit.currentPosition[1] === 23
+      // ) {
+      // console.log(grid.map(row => row.join('')).join('\n'))
+      // console.log(targetPaths)
+      // console.log(
+      //   targetPaths[0][1],
+      //   targetPaths[0][targetPaths[0].length - 1],
+      //   'TARGETPATHS, I CHOOSE YOU'
+      // )
+      // }
+      // return the first step to take for the shortest path ([0] is the player current position)
+
+
+      return targetPaths[0][1];
+    } // no paths to a target found yet, keep iterating with the paths after one more step
+
+
+    paths = newPaths; // console.log(paths, 'pathsEnd')
+
+    if (paths.length < 1) return null; // no reachables targets, search ends without a result
+  }
+} // First version; tool would only return a single path :'(
+
 
 const getShortestPath = (unit, grid, enemies) => {
   const paths = [];
@@ -2699,9 +2816,9 @@ const getShortestPath = (unit, grid, enemies) => {
         cell
       });
     });
-  }
+  } // console.log(paths, unit.id)
 
-  console.log(paths, unit.id);
+
   paths.forEach(path => {
     if (path.length !== 0) {
       if (path.length < shortestPath.length || shortestPath === false) {
@@ -2782,7 +2899,7 @@ const getUnitsNextAction = (unit, grid, units, alreadyMoved = false) => {
         return lowest;
       });
     } else {
-      const nextStep = getNextStep(unit, grid, remainingEnemies);
+      const nextStep = findNextMovement(unit, grid, remainingEnemies); // console.log(nextStep, 'MOVE')
 
       if (nextStep && !alreadyMoved) {
         action.type = MOVE;
@@ -2791,9 +2908,9 @@ const getUnitsNextAction = (unit, grid, units, alreadyMoved = false) => {
         action.type = NOTHING;
       }
     }
-  }
+  } // console.log(unit.id, action)
 
-  console.log(unit.id, action);
+
   return action;
 };
 
@@ -2806,12 +2923,13 @@ var _default = {
     });
     const units = getInitialUnits(grid);
     let turnCount = 0;
+    let endedBeforeEndOfTurn = false;
     let done = false;
 
-    while (!done && turnCount < 25) {
+    while (!done) {
       const sortedUnits = getSortedUnits(units); // console.log(sortedUnits, 'SORTED')
 
-      sortedUnits.forEach(unitId => {
+      sortedUnits.forEach((unitId, index) => {
         const currentUnit = units[unitId];
 
         if (!currentUnit.dead) {
@@ -2820,10 +2938,10 @@ var _default = {
           switch (action.type) {
             case ATTACK:
               const targetUnit = units[action.target];
-              targetUnit.health -= currentUnit.attack;
-              console.log(`${currentUnit.id} ATTACKS ${action.target}`);
+              targetUnit.health -= currentUnit.attack; // console.log(`${currentUnit.id} ATTACKS ${action.target}`)
 
               if (targetUnit.health <= 0) {
+                // console.log(`${action.target} DIES!`)
                 targetUnit.dead = true;
                 grid[targetUnit.currentPosition[0]][targetUnit.currentPosition[1]] = '.';
               }
@@ -2838,8 +2956,9 @@ var _default = {
 
               if (followUpAction.type === ATTACK) {
                 const targetUnit = units[followUpAction.target];
-                targetUnit.health -= currentUnit.attack;
-                console.log(`${currentUnit.id} ATTACKS ${followUpAction.target}`);
+                targetUnit.health -= currentUnit.attack; // console.log(
+                // `${currentUnit.id} ATTACKS ${followUpAction.target}`
+                // )
 
                 if (targetUnit.health <= 0) {
                   targetUnit.dead = true;
@@ -2851,6 +2970,11 @@ var _default = {
 
             case BATTLE_OVER:
               done = true;
+
+              if (index !== sortedUnits.length - 1) {
+                endedBeforeEndOfTurn = true;
+              }
+
               break;
 
             default:
@@ -2858,18 +2982,155 @@ var _default = {
           }
         } // console.table(grid)
 
-      });
-      turnCount++;
-      console.table(grid);
-      console.log('NEW TURN, turn ' + turnCount);
+      }); // console.log(`After turn ${turnCount}`)
+      // if (turnCount <= 4) {
+      //   console.log(grid.map(row => row.join('')).join('\n'))
+      //   console.log(units)
+      // }
+
+      turnCount++; // console.log('NEW TURN, turn ' + turnCount)
     } // console.log(units)
     // console.table(grid)
 
 
-    return input;
+    let totalTurns = turnCount - 1; // console.log(totalTurns)
+    // console.log(units)
+
+    let totalHealth = 0;
+
+    for (const key in units) {
+      const unit = units[key];
+
+      if (!unit.dead) {
+        totalHealth += unit.health;
+      }
+    } // console.log(totalHealth)
+
+
+    return totalTurns * totalHealth;
   },
   b: input => {
-    return input;
+    const baseGrid = []; // Get the baseGrid
+
+    input.forEach(row => {
+      baseGrid.push(row.split(''));
+    });
+    let elfPower = 4;
+    const baseUnits = getInitialUnits(baseGrid);
+    let turnCount = 0;
+    let endedBeforeEndOfTurn = false;
+    let done = false;
+    let units = {};
+    let grid = [];
+
+    while (!done) {
+      let elfDeath = 0;
+      units = (0, _lodash.cloneDeep)(baseUnits);
+      grid = (0, _lodash.cloneDeep)(baseGrid);
+
+      for (const key in units) {
+        const unit = units[key];
+
+        if (unit.type === 'E') {
+          unit.attack = elfPower;
+        }
+      }
+
+      turnCount = 0;
+
+      while (elfDeath === 0 && !done) {
+        const sortedUnits = getSortedUnits(units); // console.log(sortedUnits, 'SORTED')
+
+        sortedUnits.forEach((unitId, index) => {
+          const currentUnit = units[unitId];
+
+          if (!currentUnit.dead) {
+            const action = getUnitsNextAction(currentUnit, grid, units);
+
+            switch (action.type) {
+              case ATTACK:
+                const targetUnit = units[action.target];
+                targetUnit.health -= currentUnit.attack; // console.log(`${currentUnit.id} ATTACKS ${action.target}`)
+
+                if (targetUnit.health <= 0) {
+                  // console.log(`${action.target} DIES!`)
+                  if (targetUnit.type === 'E') {
+                    elfDeath++;
+                  }
+
+                  targetUnit.dead = true;
+                  grid[targetUnit.currentPosition[0]][targetUnit.currentPosition[1]] = '.';
+                }
+
+                break;
+
+              case MOVE:
+                grid[currentUnit.currentPosition[0]][currentUnit.currentPosition[1]] = '.';
+                currentUnit.currentPosition = action.target;
+                grid[currentUnit.currentPosition[0]][currentUnit.currentPosition[1]] = currentUnit.type;
+                const followUpAction = getUnitsNextAction(currentUnit, grid, units, true);
+
+                if (followUpAction.type === ATTACK) {
+                  const targetUnit = units[followUpAction.target];
+                  targetUnit.health -= currentUnit.attack; // console.log(
+                  // `${currentUnit.id} ATTACKS ${followUpAction.target}`
+                  // )
+
+                  if (targetUnit.health <= 0) {
+                    targetUnit.dead = true;
+
+                    if (targetUnit.type === 'E') {
+                      elfDeath++;
+                    }
+
+                    grid[targetUnit.currentPosition[0]][targetUnit.currentPosition[1]] = '.';
+                  }
+                }
+
+                break;
+
+              case BATTLE_OVER:
+                done = true;
+
+                if (index !== sortedUnits.length - 1) {
+                  endedBeforeEndOfTurn = true;
+                }
+
+                break;
+
+              default:
+                break;
+            }
+          } // console.table(grid)
+
+        });
+        turnCount++; // console.log(turnCount)
+        // console.table(grid)
+        // console.log('NEW TURN, turn ' + turnCount)
+      }
+
+      elfPower++; // console.log(
+      //   `Heck, a elf died; giving them more POWER, power is now ${elfPower}`
+      // )
+    } // console.log(units)
+    // console.table(grid)
+
+
+    let totalTurns = turnCount - 1; // console.log(totalTurns)
+
+    let totalHealth = 0;
+
+    for (const key in units) {
+      const unit = units[key];
+
+      if (!unit.dead) {
+        totalHealth += unit.health;
+      }
+    } // console.log(totalHealth)
+    // console.log(elfPower)
+
+
+    return totalTurns * totalHealth;
   }
 };
 exports.default = _default;
@@ -2883,82 +3144,47 @@ exports.default = void 0;
 var _default = {
   a: [{
     input: [`#######`, `#.G...#`, `#...EG#`, `#.#.#G#`, `#..G#E#`, `#.....#`, `#######`],
-    expected: 27730 // {
-    //   input: [
-    //     `#######`,
-    //     `#G..#E#`,
-    //     `#E#E.E#`,
-    //     `#G.##.#`,
-    //     `#...#E#`,
-    //     `#...E.#`,
-    //     `#######`
-    //   ],
-    //   expected: 36334
-    // },
-    // {
-    //   input: [
-    //     `#######`,
-    //     `#E..EG#`,
-    //     `#.#G.E#`,
-    //     `#E.##E#`,
-    //     `#G..#.#`,
-    //     `#..E#.#`,
-    //     `#######`
-    //   ],
-    //   expected: 39514
-    // },
-    // {
-    //   input: [
-    //     `#######`,
-    //     `#E.G#.#`,
-    //     `#.#G..#`,
-    //     `#G.#.G#`,
-    //     `#G..#.#`,
-    //     `#...E.#`,
-    //     `#######`
-    //   ],
-    //   expected: 27755
-    // },
-    // {
-    //   input: [
-    //     `#######`,
-    //     `#.E...#`,
-    //     `#.#..G#`,
-    //     `#.###.#`,
-    //     `#E#G#G#`,
-    //     `#...#G#`,
-    //     `#######`
-    //   ],
-    //   expected: 28944
-    // },
-    // {
-    //   input: [
-    //     `#########`,
-    //     `#G......#`,
-    //     `#.E.#...#`,
-    //     `#..##..G#`,
-    //     `#...##..#`,
-    //     `#...#...#`,
-    //     `#.G...G.#`,
-    //     `#.....G.#`,
-    //     `#########`
-    //   ],
-    //   expected: 18740
-    // }
-
+    expected: 27730
+  }, {
+    input: [`#######`, `#G..#E#`, `#E#E.E#`, `#G.##.#`, `#...#E#`, `#...E.#`, `#######`],
+    expected: 36334
+  }, {
+    input: [`#######`, `#E..EG#`, `#.#G.E#`, `#E.##E#`, `#G..#.#`, `#..E#.#`, `#######`],
+    expected: 39514
+  }, {
+    input: [`#######`, `#E.G#.#`, `#.#G..#`, `#G.#.G#`, `#G..#.#`, `#...E.#`, `#######`],
+    expected: 27755
+  }, {
+    input: [`#######`, `#.E...#`, `#.#..G#`, `#.###.#`, `#E#G#G#`, `#...#G#`, `#######`],
+    expected: 28944
+  }, {
+    input: [`####`, `##E#`, `#GG#`, `####`],
+    expected: 67
+  }, {
+    input: [`#####`, `#GG##`, `#.###`, `#..E#`, `#.#G#`, `#.E##`, `#####`],
+    expected: 71
   }],
   b: [{
-    input: 1,
-    expected: 1
+    input: [`#######`, `#.G...#`, `#...EG#`, `#.#.#G#`, `#..G#E#`, `#.....#`, `#######`],
+    expected: 4988
   }, {
-    input: 1,
-    expected: 1
+    input: [`#######`, `#G..#E#`, `#E#E.E#`, `#G.##.#`, `#...#E#`, `#...E.#`, `#######`],
+    expected: 31284
   }, {
-    input: 1,
-    expected: 1
+    input: [`#######`, `#E..EG#`, `#.#G.E#`, `#E.##E#`, `#G..#.#`, `#..E#.#`, `#######`],
+    expected: 3478
   }, {
-    input: 1,
-    expected: 1
+    input: [`#######`, `#E.G#.#`, `#.#G..#`, `#G.#.G#`, `#G..#.#`, `#...E.#`, `#######`],
+    expected: 6474
+  }, {
+    input: [`#######`, `#.E...#`, `#.#..G#`, `#.###.#`, `#E#G#G#`, `#...#G#`, `#######`],
+    expected: 1140
+  }, {
+    input: [`####`, `##E#`, `#GG#`, `####`],
+    expected: 67
+  }, {
+    input: [`#####`, `#GG##`, `#.###`, `#..E#`, `#.#G#`, `#.E##`, `#####`],
+    expected: 71
   }]
 };
 exports.default = _default;
@@ -2981,7 +3207,458 @@ var _default = {
   tests: _test.default
 };
 exports.default = _default;
-},{"./solution":"days/day15/solution.js","./test":"days/day15/test.js"}],"days/index.js":[function(require,module,exports) {
+},{"./solution":"days/day15/solution.js","./test":"days/day15/test.js"}],"days/day16/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _lodash = require("lodash");
+
+const addr = (register, a, b, c) => {
+  register[c] = register[a] + register[b];
+  return register;
+};
+
+const addi = (register, a, b, c) => {
+  register[c] = register[a] + b;
+  return register;
+};
+
+const mulr = (register, a, b, c) => {
+  register[c] = register[a] * register[b];
+  return register;
+};
+
+const muli = (register, a, b, c) => {
+  register[c] = register[a] * b;
+  return register;
+};
+
+const banr = (register, a, b, c) => {
+  register[c] = register[a] & register[b];
+  return register;
+};
+
+const bani = (register, a, b, c) => {
+  register[c] = register[a] & b;
+  return register;
+};
+
+const borr = (register, a, b, c) => {
+  register[c] = register[a] | register[b];
+  return register;
+};
+
+const bori = (register, a, b, c) => {
+  register[c] = register[a] | b;
+  return register;
+};
+
+const setr = (register, a, b, c) => {
+  register[c] = register[a];
+  return register;
+};
+
+const seti = (register, a, b, c) => {
+  register[c] = a;
+  return register;
+};
+
+const gtir = (register, a, b, c) => {
+  register[c] = a > register[b] ? 1 : 0;
+  return register;
+};
+
+const gtri = (register, a, b, c) => {
+  register[c] = register[a] > b ? 1 : 0;
+  return register;
+};
+
+const gtrr = (register, a, b, c) => {
+  register[c] = register[a] > register[b] ? 1 : 0;
+  return register;
+};
+
+const eqir = (register, a, b, c) => {
+  register[c] = a === register[b] ? 1 : 0;
+  return register;
+};
+
+const eqri = (register, a, b, c) => {
+  register[c] = register[a] === b ? 1 : 0;
+  return register;
+};
+
+const eqrr = (register, a, b, c) => {
+  register[c] = register[a] === register[b] ? 1 : 0;
+  return register;
+};
+
+const funcMap = {
+  0: addr,
+  1: addi,
+  2: mulr,
+  3: muli,
+  4: banr,
+  5: bani,
+  6: borr,
+  7: bori,
+  8: setr,
+  9: seti,
+  10: gtir,
+  11: gtri,
+  12: gtrr,
+  13: eqir,
+  14: eqri,
+  15: eqrr
+};
+
+const copy = input => input.slice(0);
+
+var _default = {
+  a: input => {
+    let totalMatches = 0;
+
+    for (let i = 0; i < input.length; i++) {
+      const before = input[i].split(': [')[1].replace(']', '').split(', ').map(val => parseInt(val));
+      const instruction = input[i + 1].split(' ').map(val => parseInt(val));
+      const after = input[i + 2].split(':  [')[1].replace(']', '').split(', ').map(val => parseInt(val));
+      let matches = 0;
+      console.log(before, 'before');
+      console.log(instruction, 'instruction');
+      console.log(after, 'after');
+      const a = instruction[1];
+      const b = instruction[2];
+      const c = instruction[3]; // console.log(addr(copy(before), instruction))
+
+      if ((0, _lodash.isEqual)(addr(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(addi(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(addi(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(mulr(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(mulr(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(muli(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(muli(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(banr(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(banr(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(bani(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(bani(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(borr(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(borr(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(bori(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(bori(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(setr(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(setr(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(seti(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(seti(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(gtir(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(gtir(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(gtri(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(gtri(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(gtrr(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(gtrr(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(seti(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(eqir(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(eqri(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(eqri(copy(before), a, b, c), after)) {
+        matches++;
+      } // console.log(seti(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(eqrr(copy(before), a, b, c), after)) {
+        matches++;
+      }
+
+      console.log(matches);
+
+      if (matches >= 3) {
+        totalMatches++;
+      }
+
+      i += 3;
+
+      if (input[i + 1] === '') {
+        i = input.length;
+      }
+    }
+
+    return totalMatches; // 237 too low
+    // 541 too low
+  },
+  b: input => {
+    let totalMatches = 0;
+    let opCodeLogs = {
+      0: [],
+      1: [],
+      2: [],
+      3: [],
+      4: [],
+      5: [],
+      6: [],
+      7: [],
+      8: [],
+      9: [],
+      10: [],
+      11: [],
+      12: [],
+      13: [],
+      14: [],
+      15: []
+    };
+    let lastLine = 0;
+
+    for (let i = 0; i < input.length; i++) {
+      const before = input[i].split(': [')[1].replace(']', '').split(', ').map(val => parseInt(val));
+      const instruction = input[i + 1].split(' ').map(val => parseInt(val));
+      const after = input[i + 2].split(':  [')[1].replace(']', '').split(', ').map(val => parseInt(val));
+      let matches = 0;
+      const opCodes = []; // console.log(before, 'before')
+      // console.log(instruction, 'instruction')
+      // console.log(after, 'after')
+
+      const a = instruction[1];
+      const b = instruction[2];
+      const c = instruction[3]; // console.log(addr(copy(before), instruction))
+
+      if ((0, _lodash.isEqual)(addr(copy(before), a, b, c), after)) {
+        opCodes.push(0);
+      } // console.log(addi(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(addi(copy(before), a, b, c), after)) {
+        opCodes.push(1);
+      } // console.log(mulr(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(mulr(copy(before), a, b, c), after)) {
+        opCodes.push(2);
+      } // console.log(muli(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(muli(copy(before), a, b, c), after)) {
+        opCodes.push(3);
+      } // console.log(banr(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(banr(copy(before), a, b, c), after)) {
+        opCodes.push(4);
+      } // console.log(bani(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(bani(copy(before), a, b, c), after)) {
+        opCodes.push(5);
+      } // console.log(borr(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(borr(copy(before), a, b, c), after)) {
+        opCodes.push(6);
+      } // console.log(bori(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(bori(copy(before), a, b, c), after)) {
+        opCodes.push(7);
+      } // console.log(setr(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(setr(copy(before), a, b, c), after)) {
+        opCodes.push(8);
+      } // console.log(seti(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(seti(copy(before), a, b, c), after)) {
+        opCodes.push(9);
+      } // console.log(gtir(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(gtir(copy(before), a, b, c), after)) {
+        opCodes.push(10);
+      } // console.log(gtri(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(gtri(copy(before), a, b, c), after)) {
+        opCodes.push(11);
+      } // console.log(gtrr(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(gtrr(copy(before), a, b, c), after)) {
+        opCodes.push(12);
+      } // console.log(seti(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(eqir(copy(before), a, b, c), after)) {
+        opCodes.push(13);
+      } // console.log(eqri(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(eqri(copy(before), a, b, c), after)) {
+        opCodes.push(14);
+      } // console.log(seti(copy(before), a, b, c))
+
+
+      if ((0, _lodash.isEqual)(eqrr(copy(before), a, b, c), after)) {
+        opCodes.push(15);
+      } // console.log(instruction[0])
+
+
+      opCodeLogs[instruction[0]].push(opCodes);
+      i += 3;
+
+      if (input[i + 1] === '') {
+        lastLine = i;
+        i = input.length;
+      }
+    } // console.log(lastLine)
+    // console.log(opCodeLogs)
+
+
+    const codes = {};
+
+    for (const key in opCodeLogs) {
+      const logs = opCodeLogs[key];
+      const intersected = (0, _lodash.intersection)(...logs);
+      codes[key] = intersected;
+    } // console.log(codes, 'starting')
+
+
+    let done = false;
+    const found = [];
+
+    while (!done) {
+      let moreThanOne = false;
+
+      for (const key in codes) {
+        const value = codes[key];
+
+        if (value.length === 1 && found.indexOf(value) === -1) {
+          found.push(value[0]);
+        } else {
+          moreThanOne = true; // console.log(found)
+          // console.log(key, difference(value, found))
+
+          codes[key] = (0, _lodash.difference)(value, found);
+        }
+      }
+
+      if (moreThanOne === false) {
+        done = true;
+      } // console.log(codes, counter)
+      // console.log(found)
+      // counter++
+
+    }
+
+    const callers = {};
+
+    for (const key in codes) {
+      callers[key] = funcMap[codes[key][0]];
+    } // console.log(codes)
+
+
+    let registers = [0, 0, 0, 0];
+
+    for (let i = lastLine + 3; i < input.length; i++) {
+      const instruction = input[i].split(' ').map(val => parseInt(val));
+      const a = instruction[1];
+      const b = instruction[2];
+      const c = instruction[3];
+      registers = callers[instruction[0]](registers, a, b, c); // console.log(registers)
+      // console.log(instruction, 'i')
+    } // console.log(input[lastLine + 3])
+    // console.log(callers)
+
+
+    return registers[0];
+  }
+};
+exports.default = _default;
+},{}],"days/day16/test.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: [{
+    input: [`Before: [3, 2, 1, 1]`, `9 2 1 2`, `After:  [3, 2, 2, 1]`],
+    expected: 1
+  }, {
+    input: [`Before: [1, 2, 1, 1]`, `10 3 3 1`, `After:  [1, 0, 1, 1]`],
+    expected: 1
+  }],
+  b: [{
+    input: [`Before: [3, 2, 1, 1]`, `9 2 1 2`, `After:  [3, 2, 2, 1]`],
+    expected: 1
+  }, {
+    input: [`Before: [1, 2, 1, 1]`, `10 3 3 1`, `After:  [1, 0, 1, 1]`],
+    expected: 1
+  }]
+};
+exports.default = _default;
+},{}],"days/day16/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day16/solution.js","./test":"days/day16/test.js"}],"days/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3077,6 +3754,12 @@ Object.defineProperty(exports, "day15", {
     return _day15.default;
   }
 });
+Object.defineProperty(exports, "day16", {
+  enumerable: true,
+  get: function () {
+    return _day16.default;
+  }
+});
 
 var _day = _interopRequireDefault(require("./day1"));
 
@@ -3108,8 +3791,10 @@ var _day14 = _interopRequireDefault(require("./day14"));
 
 var _day15 = _interopRequireDefault(require("./day15"));
 
+var _day16 = _interopRequireDefault(require("./day16"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js","./day8":"days/day8/index.js","./day9":"days/day9/index.js","./day10":"days/day10/index.js","./day11":"days/day11/index.js","./day12":"days/day12/index.js","./day13":"days/day13/index.js","./day14":"days/day14/index.js","./day15":"days/day15/index.js"}],"runner.js":[function(require,module,exports) {
+},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js","./day8":"days/day8/index.js","./day9":"days/day9/index.js","./day10":"days/day10/index.js","./day11":"days/day11/index.js","./day12":"days/day12/index.js","./day13":"days/day13/index.js","./day14":"days/day14/index.js","./day15":"days/day15/index.js","./day16":"days/day16/index.js"}],"runner.js":[function(require,module,exports) {
 "use strict";
 
 var _readFile = require("./utils/readFile");
