@@ -9,7 +9,14 @@ const MOVE = 'move'
 const NOTHING = 'nothing'
 
 const getSortedUnits = units => {
-  const sorted = sortBy(units, ['currentPosition'])
+  const sorted = sortBy(units, [
+    function(u) {
+      return u.currentPosition[0]
+    },
+    function(u) {
+      return u.currentPosition[1]
+    }
+  ])
   const alive = sorted.filter(unit => !unit.dead)
 
   return alive.map(unit => unit.id)
@@ -122,15 +129,67 @@ function findNextMovement(unit, grid, enemies) {
     if (targetPaths.length > 0) {
       // we got one or more paths reaching a target for the first time, here is where our search ends
       // if we found multiple shortest paths, use the one that reaches the first target according top-to-bottom/left-to-right order
+
       targetPaths = targetPaths.sort((p1, p2) =>
         p1[p1.length - 1][0] === p2[p2.length - 1][0]
           ? p1[p1.length - 1][1] - p2[p2.length - 1][1]
           : p1[p1.length - 1][0] - p2[p2.length - 1][0]
       )
+
+      if (targetPaths.length > 1) {
+        // console.log(targetPaths.map(target => target[target.length - 1]))
+        // console.log(targetPaths.map(target => target[target.length - 1].length))
+        const t1 = targetPaths[0][targetPaths[0].length - 1]
+        const t2 = targetPaths[1][targetPaths[0].length - 1]
+        // console.log(targetPaths)
+        // console.log(
+        //   `chooses ${targetPaths[0][1]} (${
+        //     targetPaths[0][targetPaths[0].length - 1]
+        //   })`
+        // )
+        if (targetPaths[0].length === targetPaths[1].length) {
+          if (t1[0] !== t2[0] && t1[1] !== t2[1]) {
+            // console.log(targetPaths[0].length, targetPaths[1].length)
+            // console.log(targetPaths[0][targetPaths[0].length - 1])
+            // console.log(targetPaths[1][targetPaths[1].length - 1])
+            // console.table(grid)
+            // console.log(unit.currentPosition)
+            const n1 = targetPaths[0][1]
+            const n2 = targetPaths[1][1]
+            // console.log('DIFFERENT target')
+            // console.log(
+            //   `chooses ${targetPaths[0][1]} (${
+            //     targetPaths[0][targetPaths[0].length - 1]
+            //   })`
+            // )
+            // console.log(t1, t2)
+            if (n2[0] < n1[0] || (n2[0] === n1[0] && n2[1] < n1[1])) {
+              return targetPaths[1][1]
+            }
+          } else {
+            // console.table(grid)
+            // console.log('same target')
+            // console.log(unit.currentPosition)
+            // console.log(t1, t2)
+          }
+        }
+      }
+
+      // if (
+      //   unit.id === 'G7' &&
+      //   unit.currentPosition[0] === 8 &&
+      //   unit.currentPosition[1] === 23
+      // ) {
+      // console.log(grid.map(row => row.join('')).join('\n'))
       // console.log(targetPaths)
+      // console.log(
+      //   targetPaths[0][1],
+      //   targetPaths[0][targetPaths[0].length - 1],
+      //   'TARGETPATHS, I CHOOSE YOU'
+      // )
+      // }
 
       // return the first step to take for the shortest path ([0] is the player current position)
-      // console.log(targetPaths, 'TARGETPATHS')
       return targetPaths[0][1]
     }
 
@@ -372,8 +431,14 @@ export default {
         // console.table(grid)
       })
 
+      // console.log(`After turn ${turnCount}`)
+      // if (turnCount <= 4) {
+      //   console.log(grid.map(row => row.join('')).join('\n'))
+      //   console.log(units)
+      // }
+
       turnCount++
-      // console.table(grid)
+
       // console.log('NEW TURN, turn ' + turnCount)
     }
 
@@ -382,7 +447,8 @@ export default {
 
     let totalTurns = turnCount - 1
 
-    console.log(totalTurns)
+    // console.log(totalTurns)
+    // console.log(units)
     let totalHealth = 0
     for (const key in units) {
       const unit = units[key]
@@ -391,7 +457,7 @@ export default {
       }
     }
 
-    console.log(totalHealth)
+    // console.log(totalHealth)
 
     return totalTurns * totalHealth
   },
@@ -514,7 +580,7 @@ export default {
 
     let totalTurns = turnCount - 1
 
-    console.log(totalTurns)
+    // console.log(totalTurns)
     let totalHealth = 0
     for (const key in units) {
       const unit = units[key]
@@ -523,8 +589,8 @@ export default {
       }
     }
 
-    console.log(totalHealth)
-    console.log(elfPower)
+    // console.log(totalHealth)
+    // console.log(elfPower)
 
     return totalTurns * totalHealth
   }
