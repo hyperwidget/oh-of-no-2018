@@ -3658,7 +3658,683 @@ var _default = {
   tests: _test.default
 };
 exports.default = _default;
-},{"./solution":"days/day16/solution.js","./test":"days/day16/test.js"}],"days/index.js":[function(require,module,exports) {
+},{"./solution":"days/day16/solution.js","./test":"days/day16/test.js"}],"days/day17/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+const flow = (grid, startingX, startingY) => {
+  let y = startingY;
+  let x = startingX;
+  let done = false;
+  let overflow = false;
+  let counter = 1;
+  let lastX = 0;
+  let lastY = 0; // while (!done && counter <= 5) {
+
+  while (!overflow) {
+    lastX = x;
+    lastY = y;
+    y = startingY;
+    x = startingX;
+    let splash = false;
+
+    while (!splash) {
+      if (y + 1 > grid.length - 1) {
+        splash = true;
+        overflow = true;
+      } else if (grid[y + 1][x] === '-') {
+        if (y > 70 && y < 80 && x < 70) {
+          console.log(x, y, 'splash IN ZONE');
+        }
+
+        splash = true;
+        overflow = true; // console.log('SPLASHOVERFLOW')
+      }
+
+      if (!splash) {
+        if (grid[y + 1][x] !== '#' && grid[y + 1][x] !== '~') {
+          y++;
+          grid[y][x] = '|';
+        } else {
+          splash = true;
+          grid[y][x] = '~';
+          let fullRight = false;
+          let fullLeft = false;
+          const startSpreadX = x;
+
+          while (!fullRight) {
+            if (grid[y][x + 1] !== '#') {
+              x++;
+
+              if (grid[y + 1][x] === '.') {
+                // console.log(grid[y + 1][x - 1], y, x, 'FALL')
+                // backtrack to start of spread to make them all '-'
+                for (let i = x; i >= startSpreadX; i--) {
+                  grid[y][i] = '-';
+                }
+
+                grid[y][x] = '|';
+                grid = flow(grid, x, y);
+                fullRight = true;
+              } else {
+                grid[y][x] = '~';
+              } // } else {
+              //   fullRight = true
+              //   // rightOverflow = true
+              // }
+
+            } else {
+              fullRight = true; // rightOverflow = true
+            }
+          }
+
+          x = startSpreadX; // console.log('WATER')
+
+          while (!fullLeft) {
+            // console.log(x, y)
+            if (x <= 0) {
+              // console.log('overflow, cmon')
+              overflow = true;
+              let overflowedLeft = true;
+              fullLeft = true;
+            }
+
+            {
+              if (grid[y][x - 1] !== '#') {
+                x--;
+
+                if (grid[y + 1][x] === '.') {
+                  grid[y][x] = '|';
+
+                  for (let i = x; i <= startSpreadX; i++) {
+                    grid[y][i] = '-';
+                  }
+
+                  grid = flow(grid, x, y);
+                  fullLeft = true;
+                } else {
+                  grid[y][x] = '~';
+                }
+              } else {
+                fullLeft = true;
+              }
+            }
+          }
+
+          if (overflow) {}
+        }
+      }
+
+      if (overflow) {
+        y++;
+
+        if (grid[y]) {
+          while (grid[y][x + 1] === '~') {
+            x++;
+            grid[y][x] = '-';
+          }
+
+          x = startingX;
+
+          while (grid[y][x - 1] === '~') {
+            x--;
+            grid[y][x] = '-';
+          }
+        }
+      }
+    }
+
+    if (lastX === x && lastY === y) {
+      console.log('NO MOVEMENT');
+      console.log(y, x);
+      overflow = true;
+    }
+
+    counter++;
+  } // }
+
+
+  return grid;
+};
+
+var _default = {
+  a: input => {
+    let grid = [];
+    let highestX = 0;
+    let lowestX = 999;
+    let lowestY = 0;
+    let highestY = 0; // Super not clever way of setting everything up, I don't care
+
+    input.forEach(instruction => {
+      const splitVal = instruction.split(', ');
+      const part1 = splitVal[0].split('=');
+      const part2 = splitVal[1].split('=');
+      const part2Spread = part2[1].split('..').map(val => parseInt(val));
+
+      if (part1[0] === 'x') {
+        if (parseInt(part1[1]) > highestX) {
+          highestX = parseInt(part1[1]);
+        }
+
+        if (parseInt(part1[1]) < lowestX) {
+          lowestX = parseInt(part1[1]);
+        }
+      }
+
+      if (part1[0] === 'y') {
+        if (parseInt(part1[1]) > highestY) {
+          highestY = parseInt(part1[1]);
+        }
+
+        if (parseInt(part1[1]) < lowestY) {
+          lowestY = parseInt(part1[1]);
+        }
+      }
+
+      if (part2[0] === 'x') {
+        if (part2Spread[part2Spread.length - 1] > highestX) {
+          highestX = part2Spread[part2Spread.length - 1];
+        }
+
+        if (part2Spread[0] < lowestX) {
+          lowestX = part2Spread[0];
+        }
+      }
+
+      if (part2[0] === 'y') {
+        if (part2Spread[part2Spread.length - 1] > highestY) {
+          highestY = part2Spread[part2Spread.length - 1];
+        }
+
+        if (part2Spread[0] < lowestY) {
+          lowestY = part2Spread[0];
+        }
+      }
+    });
+
+    for (let y = 0; y <= highestY; y++) {
+      grid.push([]);
+
+      for (let x = 0; x <= highestX + 1; x++) {
+        grid[y].push('.');
+      }
+    } // Duplication? oh wells
+
+
+    input.forEach(instruction => {
+      const splitVal = instruction.split(', ');
+      const part1 = splitVal[0].split('=');
+      const part2 = splitVal[1].split('=');
+      const part2Spread = part2[1].split('..').map(val => parseInt(val));
+
+      if (part2[0] === 'x') {
+        for (let i = part2Spread[0]; i <= part2Spread[part2Spread.length - 1]; i++) {
+          grid[part1[1]][i] = '#';
+        }
+      }
+
+      if (part2[0] === 'y') {
+        for (let i = part2Spread[0]; i <= part2Spread[part2Spread.length - 1]; i++) {
+          grid[i][part1[1]] = '#';
+        }
+      }
+    });
+    grid[0][500] = '+'; // Lets make the grid smaller, we only care about values in it
+    // console.log(`${lowestX}, ${highestX}`)
+
+    const startingPlace = 500 - lowestX + 1; // console.log(startingPlace)
+
+    for (let i = 0; i < grid.length; i++) {
+      grid[i] = grid[i].slice(lowestX - 2, highestX + 2);
+    }
+
+    let done = false;
+    let counter = 1; // while (!done && counter <= 5) {
+
+    grid = flow(grid, startingPlace, 0); // console.table(grid)
+
+    for (let i = 0; i < grid.length; i++) {
+      // if (i > 70 && i < 80) {
+      console.log(grid[i].join('')); // }
+    }
+
+    let total = 0;
+
+    for (let i = 0; i < grid.length; i++) {
+      for (let j = 0; j < grid[i].length; j++) {
+        const val = grid[i][j];
+
+        if (val === '|' || val === '~' || val === '-') {
+          total++;
+        }
+      }
+    }
+
+    return total; // 118 too small
+    // 31955 too big (didn't subtract 2)
+    // 31953 too big (didn't subtract 2)
+  },
+  b: input => {
+    let grid = [];
+    let highestX = 0;
+    let lowestX = 999;
+    let lowestY = 0;
+    let highestY = 0; // Super not clever way of setting everything up, I don't care
+
+    input.forEach(instruction => {
+      const splitVal = instruction.split(', ');
+      const part1 = splitVal[0].split('=');
+      const part2 = splitVal[1].split('=');
+      const part2Spread = part2[1].split('..').map(val => parseInt(val));
+
+      if (part1[0] === 'x') {
+        if (parseInt(part1[1]) > highestX) {
+          highestX = parseInt(part1[1]);
+        }
+
+        if (parseInt(part1[1]) < lowestX) {
+          lowestX = parseInt(part1[1]);
+        }
+      }
+
+      if (part1[0] === 'y') {
+        if (parseInt(part1[1]) > highestY) {
+          highestY = parseInt(part1[1]);
+        }
+
+        if (parseInt(part1[1]) < lowestY) {
+          lowestY = parseInt(part1[1]);
+        }
+      }
+
+      if (part2[0] === 'x') {
+        if (part2Spread[part2Spread.length - 1] > highestX) {
+          highestX = part2Spread[part2Spread.length - 1];
+        }
+
+        if (part2Spread[0] < lowestX) {
+          lowestX = part2Spread[0];
+        }
+      }
+
+      if (part2[0] === 'y') {
+        if (part2Spread[part2Spread.length - 1] > highestY) {
+          highestY = part2Spread[part2Spread.length - 1];
+        }
+
+        if (part2Spread[0] < lowestY) {
+          lowestY = part2Spread[0];
+        }
+      }
+    });
+
+    for (let y = 0; y <= highestY; y++) {
+      grid.push([]);
+
+      for (let x = 0; x <= highestX + 1; x++) {
+        grid[y].push('.');
+      }
+    } // Duplication? oh wells
+
+
+    input.forEach(instruction => {
+      const splitVal = instruction.split(', ');
+      const part1 = splitVal[0].split('=');
+      const part2 = splitVal[1].split('=');
+      const part2Spread = part2[1].split('..').map(val => parseInt(val));
+
+      if (part2[0] === 'x') {
+        for (let i = part2Spread[0]; i <= part2Spread[part2Spread.length - 1]; i++) {
+          grid[part1[1]][i] = '#';
+        }
+      }
+
+      if (part2[0] === 'y') {
+        for (let i = part2Spread[0]; i <= part2Spread[part2Spread.length - 1]; i++) {
+          grid[i][part1[1]] = '#';
+        }
+      }
+    });
+    grid[0][500] = '+'; // Lets make the grid smaller, we only care about values in it
+    // console.log(`${lowestX}, ${highestX}`)
+
+    const startingPlace = 500 - lowestX + 1; // console.log(startingPlace)
+
+    for (let i = 0; i < grid.length; i++) {
+      grid[i] = grid[i].slice(lowestX - 2, highestX + 2);
+    }
+
+    let done = false;
+    let counter = 1; // while (!done && counter <= 5) {
+
+    grid = flow(grid, startingPlace, 0); // console.table(grid)
+
+    for (let i = 0; i < grid.length; i++) {
+      // if (i > 70 && i < 80) {
+      console.log(grid[i].join('')); // }
+    }
+
+    let total = 0;
+
+    for (let i = 0; i < grid.length; i++) {
+      for (let j = 0; j < grid[i].length; j++) {
+        const val = grid[i][j];
+
+        if (val === '~') {
+          total++;
+        }
+      }
+    }
+
+    return total; //
+  }
+};
+exports.default = _default;
+},{}],"days/day17/test.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: [{
+    input: [`x=495, y=2..7`, `y=7, x=495..501`, `x=501, y=3..7`, `x=498, y=2..4`, `x=506, y=1..2`, `x=498, y=10..13`, `x=504, y=10..13`, `y=13, x=498..504`],
+    expected: 57
+  }],
+  b: [{
+    input: [`x=495, y=2..7`, `y=7, x=495..501`, `x=501, y=3..7`, `x=498, y=2..4`, `x=506, y=1..2`, `x=498, y=10..13`, `x=504, y=10..13`, `y=13, x=498..504`],
+    expected: 29
+  }]
+};
+exports.default = _default;
+},{}],"days/day17/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day17/solution.js","./test":"days/day17/test.js"}],"days/day18/solution.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _lodash = require("lodash");
+
+const LUMBERYARD = '#';
+const OPEN = '.';
+const TREES = '|';
+
+const getAdjacentValues = (grid, x, y) => {
+  let adjacents = []; //I'ma just hardcode some of this
+  // Row above
+
+  if (y > 0) {
+    if (x > 0) {
+      adjacents.push(grid[y - 1][x - 1]);
+    }
+
+    adjacents.push(grid[y - 1][x]);
+
+    if (x + 1 < grid[y].length) {
+      adjacents.push(grid[y - 1][x + 1]);
+    }
+  } // Current row
+
+
+  if (x > 0) {
+    adjacents.push(grid[y][x - 1]);
+  }
+
+  if (x + 1 < grid[y].length) {
+    adjacents.push(grid[y][x + 1]);
+  } // Next Row
+
+
+  if (y + 1 <= grid.length - 1) {
+    if (x > 0) {
+      adjacents.push(grid[y + 1][x - 1]);
+    }
+
+    adjacents.push(grid[y + 1][x]);
+
+    if (x + 1 < grid[y].length) {
+      adjacents.push(grid[y + 1][x + 1]);
+    }
+  } // if (y === 1 && x == 4) {
+  //   console.log(adjacents, grid[y + 1], 'GET NEXT RIW')
+  // }
+
+
+  return adjacents;
+};
+
+var _default = {
+  a: input => {
+    let grid = [];
+    input.forEach(instruction => {
+      grid.push(instruction.split(''));
+    }); // console.table(grid)
+
+    for (let minutes = 0; minutes < 10; minutes++) {
+      const copy = (0, _lodash.cloneDeep)(grid); // console.table(copy)
+      // console.log('copy', minutes)
+
+      for (let row = 0; row < copy.length; row++) {
+        for (let col = 0; col < copy[row].length; col++) {
+          const adjacents = getAdjacentValues(copy, col, row);
+          const currentVal = copy[row][col];
+          const adjacentString = adjacents.join(''); // if (row === 1 && col == 4) {
+          //   console.log(adjacents, 'Hiii')
+          // }
+
+          switch (currentVal) {
+            case OPEN:
+              if ((adjacentString.match(/\|/g) || []).length >= 3) {
+                grid[row][col] = TREES;
+              }
+
+              break;
+
+            case TREES:
+              if ((adjacentString.match(/\#/g) || []).length >= 3) {
+                grid[row][col] = LUMBERYARD;
+              }
+
+              break;
+
+            case LUMBERYARD:
+              if ((adjacentString.match(/\#/g) || []).length >= 1 && (adjacentString.match(/\|/g) || []).length >= 1) {
+                grid[row][col] = LUMBERYARD;
+              } else {
+                grid[row][col] = OPEN;
+              }
+
+              break;
+
+            default:
+              break;
+          }
+        }
+      } // console.table(grid)
+
+    }
+
+    const finalString = grid.map(row => row.join('')).join('');
+    const treeTotal = (finalString.match(/\|/g) || []).length;
+    const lumberYardTotal = (finalString.match(/\#/g) || []).length;
+    return treeTotal * lumberYardTotal;
+  },
+  b: input => {
+    let grid = [];
+    input.forEach(instruction => {
+      grid.push(instruction.split(''));
+    }); // console.table(grid)
+
+    let lastTotal = 0;
+    const values = [];
+    let searchVal = '';
+
+    for (let minutes = 0; minutes < 1000000000; minutes++) {
+      const copy = (0, _lodash.cloneDeep)(grid); // console.table(copy)
+      // console.log('copy', minutes)
+
+      for (let row = 0; row < copy.length; row++) {
+        for (let col = 0; col < copy[row].length; col++) {
+          const adjacents = getAdjacentValues(copy, col, row);
+          const currentVal = copy[row][col];
+          const adjacentString = adjacents.join(''); // if (row === 1 && col == 4) {
+          //   console.log(adjacents, 'Hiii')
+          // }
+
+          switch (currentVal) {
+            case OPEN:
+              if ((adjacentString.match(/\|/g) || []).length >= 3) {
+                grid[row][col] = TREES;
+              }
+
+              break;
+
+            case TREES:
+              if ((adjacentString.match(/\#/g) || []).length >= 3) {
+                grid[row][col] = LUMBERYARD;
+              }
+
+              break;
+
+            case LUMBERYARD:
+              if ((adjacentString.match(/\#/g) || []).length >= 1 && (adjacentString.match(/\|/g) || []).length >= 1) {
+                grid[row][col] = LUMBERYARD;
+              } else {
+                grid[row][col] = OPEN;
+              }
+
+              break;
+
+            default:
+              break;
+          }
+        }
+      } // console.table(grid)
+
+
+      const stringy = grid.map(row => row.join('')).join('\n');
+
+      if (values.includes(stringy) && searchVal === stringy) {
+        // console.log(minutes - lastTotal)
+        const diff = minutes - lastTotal;
+        console.log(minutes);
+
+        if (diff < 300) {
+          // console.log(1000000000 - minutes, 'sub')
+          // console.log(minutes, 'minutes')
+          // console.log(diff, 'diff')
+          // console.log(
+          //   `increasing by ${Math.floor(
+          //     Math.abs((1000000000 - minutes) / diff)
+          //   ) * diff}`
+          // )
+          if (minutes + (diff - 1) * 10000 < 1000000000) {
+            minutes += (diff - 1) * 10000;
+          }
+        }
+
+        lastTotal = minutes; // console.log(stringy)
+        // console.log(grid.map(row => row.join('')).join('\n'))
+      } else if (values.includes(stringy)) {
+        if (searchVal === '') {
+          searchVal = stringy;
+        }
+      } else {
+        values.push(stringy);
+      }
+
+      if (minutes % 28 === 0) {// console.log(minutes)
+        // console.log(grid.map(row => row.join('')).join('\n'))
+        // const treeTotal = (finalString.match(/\|/g) || []).length
+        // const lumberYardTotal = (finalString.match(/\#/g) || []).length
+        // let currentVal = treeTotal * lumberYardTotal
+        // console.log(currentVal)
+        // console.log(currentVal - lastTotal)
+        // lastTotal = currentVal
+      }
+    }
+
+    console.log(grid.map(row => row.join('')).join('\n'));
+    const finalString = grid.map(row => row.join('')).join('');
+    const treeTotal = (finalString.match(/\|/g) || []).length;
+    const lumberYardTotal = (finalString.match(/\#/g) || []).length;
+    return treeTotal * lumberYardTotal; // 197999 too high
+  }
+};
+exports.default = _default;
+},{}],"days/day18/test.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  a: [{
+    input: [`.#.#...|#.`, `.....#|##|`, `.|..|...#.`, `..|#.....#`, `#.#|||#|#|`, `...#.||...`, `.|....|...`, `||...#|.#|`, `|.||||..|.`, `...#.|..|.`],
+    expected: 1147
+  }],
+  b: [{
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }, {
+    input: 1,
+    expected: 1
+  }]
+};
+exports.default = _default;
+},{}],"days/day18/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _solution = _interopRequireDefault(require("./solution"));
+
+var _test = _interopRequireDefault(require("./test"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  solutions: _solution.default,
+  tests: _test.default
+};
+exports.default = _default;
+},{"./solution":"days/day18/solution.js","./test":"days/day18/test.js"}],"days/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3760,6 +4436,18 @@ Object.defineProperty(exports, "day16", {
     return _day16.default;
   }
 });
+Object.defineProperty(exports, "day17", {
+  enumerable: true,
+  get: function () {
+    return _day17.default;
+  }
+});
+Object.defineProperty(exports, "day18", {
+  enumerable: true,
+  get: function () {
+    return _day18.default;
+  }
+});
 
 var _day = _interopRequireDefault(require("./day1"));
 
@@ -3793,8 +4481,12 @@ var _day15 = _interopRequireDefault(require("./day15"));
 
 var _day16 = _interopRequireDefault(require("./day16"));
 
+var _day17 = _interopRequireDefault(require("./day17"));
+
+var _day18 = _interopRequireDefault(require("./day18"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js","./day8":"days/day8/index.js","./day9":"days/day9/index.js","./day10":"days/day10/index.js","./day11":"days/day11/index.js","./day12":"days/day12/index.js","./day13":"days/day13/index.js","./day14":"days/day14/index.js","./day15":"days/day15/index.js","./day16":"days/day16/index.js"}],"runner.js":[function(require,module,exports) {
+},{"./day1":"days/day1/index.js","./day2":"days/day2/index.js","./day3":"days/day3/index.js","./day4":"days/day4/index.js","./day5":"days/day5/index.js","./day6":"days/day6/index.js","./day7":"days/day7/index.js","./day8":"days/day8/index.js","./day9":"days/day9/index.js","./day10":"days/day10/index.js","./day11":"days/day11/index.js","./day12":"days/day12/index.js","./day13":"days/day13/index.js","./day14":"days/day14/index.js","./day15":"days/day15/index.js","./day16":"days/day16/index.js","./day17":"days/day17/index.js","./day18":"days/day18/index.js"}],"runner.js":[function(require,module,exports) {
 "use strict";
 
 var _readFile = require("./utils/readFile");
